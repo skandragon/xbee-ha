@@ -329,7 +329,7 @@ class Xbee
   class ZigbeeExplicitRxIndicatorFrame < APIFrame
     attr_reader :node64, :node16, :source_endpoint, :destination_endpoint
     attr_reader :cluster_id, :profile_id, :broadcast_radius, :receive_options, :app_data
-    attr_reader :node64_string, :node16_string
+    attr_reader :node64_string, :node16_string, :clusterid_string, :profile_string
 
     def fully_decoded ; true ; end
 
@@ -345,6 +345,8 @@ class Xbee
       @node64, @node16, @source_endpoint, @destination_endpoint, @cluster_id, @profile_id, @receive_options, @app_data = data.unpack('Q>S>CCS>S>Ca*')
       @node64_string = '%016x' % node64
       @node16_string = '%04x' % node16
+      @clusterid_string = '%04x' % cluster_id
+      @profile_string = '%04x' % profile_id
     end
   end
 

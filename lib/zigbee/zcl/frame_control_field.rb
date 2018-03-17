@@ -6,7 +6,7 @@ module Zigbee
       FRAME_TYPE_GLOBAL = 0x00
       FRAME_TYPE_LOCAL  = 0x01
 
-      def initialize(frame_type, direction, disable_default_response = 0, manufacturer_specific = 0)
+      def initialize(frame_type, direction, disable_default_response, manufacturer_specific)
         @frame_type = frame_type & 0x03
         @manufacturer_specific = manufacturer_specific & 0x01
         @direction = direction & 0x01
@@ -18,16 +18,16 @@ module Zigbee
         ret |= ((manufacturer_specific & 0x01) << 2)
         ret |= ((direction & 0x01) << 3)
         ret |= ((disable_default_response & 0x01) << 4)
-        ret
+        [ ret ]
       end
 
       def encode
-        value.chr
+        value.pack('C')
       end
 
       def self.decode(data)
-        byte = data.unpack('C')
-        new(byte & 0x03, ((byte >> 2) & 0x01), ((byte >> 3) & 0x01), ((byte >> 4) & 0x01))
+        byte, remaining = data.unpack('Ca*')
+        [ new(byte & 0x03, ((byte >> 2) & 0x01), ((byte >> 3) & 0x01), ((byte >> 4) & 0x01)), remaining ]
       end
 
       def self.has_manufacturer_flag(value)

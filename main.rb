@@ -115,7 +115,6 @@ loop do
     puts " Output cluster count: #{output_cluster_count}"
     puts "   " + output_cluster_ids.map { |x| '%04x' % x }.join(", ")
 
-
     bytes = [
         0x11,
         @counter,

@@ -11,17 +11,21 @@ module Zigbee
         @manufacturer_specific = manufacturer_specific
         @direction = direction
         @disable_default_response = disable_default_response
+        puts "@frame_type = #{@frame_type}"
       end
 
       def value
         ret = (frame_type & 0x03)
+        puts frame_type
+        puts ret
         ret |= ((manufacturer_specific & 0x01) << 2)
         ret |= ((direction & 0x01) << 3)
         ret |= ((disable_default_response & 0x01) << 4)
+        ret
       end
 
       def encode
-        value.char
+        value.chr
       end
 
       def self.decode(data)
@@ -31,6 +35,47 @@ module Zigbee
 
       def self.has_manufacturer_flag(value)
         (value & 0x04) != 0
+      end
+
+      def frame_type(value = nil)
+        if value.nil?
+          value
+        else
+          @frame_type = value
+        end
+      end
+
+      class Builder
+        def initialize
+          @frame_type = FRAME_TYPE_GLOBAL
+          @direction = 0
+          @disable_default_response = 0
+          @manufacturer_specific = 0
+        end
+
+        def frame_type(value)
+          @frame_type = value
+          self
+        end
+
+        def direction(value)
+          @direction = value
+          self
+        end
+
+        def disable_default_response(value)
+          @disable_default_response = value
+          self
+        end
+
+        def manufacturer_specific(value)
+          @manufacturer_specific = value
+          self
+        end
+
+        def build
+          FrameControlField.new(@frame_type, @direction, @disable_default_response, @manufacturer_specific)
+        end
       end
     end
   end

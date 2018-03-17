@@ -9,3 +9,12 @@ describe Zigbee::ZCL::FrameControlField do
     expect(control_field.value).to eq(0)
   end
 end
+
+describe Zigbee::ZCL::FrameControlField::Builder do
+
+  it 'should render global, from client, no manufacturer' do
+    builder = Zigbee::ZCL::FrameControlField::Builder.new
+    control_field = builder.build
+    expect(control_field.value).to eq(0)
+  end
+end

@@ -10,6 +10,8 @@ gem 'rake'
 
 gem 'rspec'
 
+gem 'simplecov', require: false, group: :test
+
 group :development do
   gem 'guard'
   gem 'guard-rspec'

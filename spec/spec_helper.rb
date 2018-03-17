@@ -1,5 +1,5 @@
-#require 'simplecov'
-#SimpleCov.start
+require 'simplecov'
+SimpleCov.start
 
 $: << File.join(File.dirname(__FILE__), '..', 'lib')
 

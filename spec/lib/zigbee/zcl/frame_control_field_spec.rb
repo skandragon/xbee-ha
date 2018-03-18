@@ -97,4 +97,26 @@ describe Zigbee::ZCL::FrameControlField::Builder do
     expect(control_field.disable_default_response).to eq(0)
     expect(control_field.value).to eq([0x00])
   end
+
+  it 'encodes properly' do
+    builder = Zigbee::ZCL::FrameControlField::Builder.new
+    control_field = builder.disable_default_response(0).build
+    expect(control_field.disable_default_response).to eq(0)
+    expect(control_field.encode).to eq([0x00].pack('C'))
+
+    builder = Zigbee::ZCL::FrameControlField::Builder.new
+    control_field = builder.disable_default_response(1).build
+    expect(control_field.disable_default_response).to eq(1)
+    expect(control_field.encode).to eq([0x10].pack('C'))
+  end
+
+  it 'decodes properly' do
+    control_field, extra = Zigbee::ZCL::FrameControlField.decode([ 0x00 ].pack('C'))
+    expect(control_field.disable_default_response).to eq(0)
+    expect(extra).to eq('')
+
+    control_field, extra = Zigbee::ZCL::FrameControlField.decode([ 0x10 ].pack('C'))
+    expect(control_field.disable_default_response).to eq(1)
+    expect(extra).to eq('')
+  end
 end

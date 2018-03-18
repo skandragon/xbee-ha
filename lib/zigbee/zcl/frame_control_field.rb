@@ -27,11 +27,7 @@ module Zigbee
 
       def self.decode(data)
         byte, remaining = data.unpack('Ca*')
-        [ new(byte & 0x03, ((byte >> 2) & 0x01), ((byte >> 3) & 0x01), ((byte >> 4) & 0x01)), remaining ]
-      end
-
-      def self.has_manufacturer_flag(value)
-        (value & 0x04) != 0
+        [ new(byte & 0x03, ((byte >> 3) & 0x01), ((byte >> 4) & 0x01), ((byte >> 2) & 0x01)), remaining ]
       end
 
       class Builder

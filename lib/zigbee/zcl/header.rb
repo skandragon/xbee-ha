@@ -1,4 +1,4 @@
-require 'utils'
+require_relative '../../utils'
 require_relative 'frame_control_field'
 
 module Zigbee
@@ -18,16 +18,16 @@ module Zigbee
         @command_identifier = command
       end
 
-      def self.decode(value)
-        frame_control = FrameControlField.decode(value)
+      def self.decode(bytes)
+        frame_control = FrameControlField.decode(bytes)
         manufacturer_code = nil
         if frame_control.manufacturer_specific == 1
-          ensure_has_bytes(value, 2)
-          manufacturer_code = value.shift << 8 | value.shift
+          ensure_has_bytes(bytes, 2)
+          manufacturer_code = bytes.shift << 8 | bytes.shift
         end
-        ensure_has_bytes(value, 2)
-        transaction_sequence_number = value.shift
-        command_identifier = value.shift
+        ensure_has_bytes(bytes, 2)
+        transaction_sequence_number = bytes.shift
+        command_identifier = bytes.shift
         new(frame_control, transaction_sequence_number, command_identifier, manufacturer_code)
       end
 

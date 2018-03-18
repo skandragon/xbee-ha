@@ -1,4 +1,4 @@
-require 'utils'
+require_relative '../../utils'
 
 module Zigbee
   module ZCL
@@ -25,9 +25,9 @@ module Zigbee
         [ ret ]
       end
 
-      def self.decode(value)
-        ensure_has_bytes(value, 1)
-        byte = value.shift
+      def self.decode(bytes)
+        ensure_has_bytes(bytes, 1)
+        byte = bytes.shift
         new(byte & 0x03, ((byte >> 3) & 0x01), ((byte >> 4) & 0x01), ((byte >> 2) & 0x01))
       end
 

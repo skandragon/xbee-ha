@@ -1,6 +1,10 @@
+require 'utils'
+
 module Zigbee
   module ZCL
     class FrameControlField
+      include ArrayUtils
+
       attr_reader :frame_type, :manufacturer_specific, :direction, :disable_default_response
 
       FRAME_TYPE_GLOBAL = 0x00
@@ -13,7 +17,7 @@ module Zigbee
         @disable_default_response = disable_default_response & 0x01
       end
 
-      def value
+      def encode
         ret = (frame_type & 0x03)
         ret |= ((manufacturer_specific & 0x01) << 2)
         ret |= ((direction & 0x01) << 3)
@@ -21,13 +25,10 @@ module Zigbee
         [ ret ]
       end
 
-      def encode
-        value.pack('C')
-      end
-
-      def self.decode(data)
-        byte, remaining = data.unpack('Ca*')
-        [ new(byte & 0x03, ((byte >> 3) & 0x01), ((byte >> 4) & 0x01), ((byte >> 2) & 0x01)), remaining ]
+      def self.decode(value)
+        ensure_has_bytes(value, 1)
+        byte = value.shift
+        new(byte & 0x03, ((byte >> 3) & 0x01), ((byte >> 4) & 0x01), ((byte >> 2) & 0x01))
       end
 
       class Builder

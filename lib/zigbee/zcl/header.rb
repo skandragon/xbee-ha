@@ -67,7 +67,7 @@ module Zigbee
         end
 
         def build
-          Header.new(@frame_control, @manufacturer_code, @transaction_sequence_number, @command_identifier)
+          Header.new(@frame_control, @transaction_sequence_number, @command_identifier, @manufacturer_code)
         end
       end
     end

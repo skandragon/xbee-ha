@@ -35,200 +35,99 @@ module Zigbee
         end
       end
 
+      #
+      # Unsigned Integers
+      #
+
+      module UnsignedInt
+        def self.included(base)
+          base.send :include, InstanceMethods
+          base.extend ClassMethods
+        end
+
+        module InstanceMethods
+          attr_reader :value
+
+          def initialize(value)
+            @value = value
+          end
+
+          def valid?
+            value != invalid_value
+          end
+
+          private
+
+          def invalid_value
+            self.class.const_get(:INVALID_VALUE)
+          end
+
+        end
+
+        module ClassMethods
+          def configure(type, length)
+            self.const_set(:TYPE, type)
+            self.const_set(:LENGTH, length)
+            invalid_value = 0
+            (length * 8).times do
+              invalid_value = (invalid_value << 1) | 0x01
+            end
+            self.const_set(:INVALID_VALUE, invalid_value)
+          end
+
+          def length
+            self.const_get(:LENGTH)
+          end
+
+          def decode(bytes)
+            ensure_has_bytes(bytes, length)
+            value = 0
+            length.times do
+              value = value << 8 | bytes.shift
+            end
+            new(value)
+          end
+        end
+      end
+
       class Uint8 < DataType
-        TYPE = 0x20
-        INVALID_VALUE = 0xff
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, 1)
-          value = bytes.shift
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x20, 1
       end
 
       class Uint16 < DataType
-        TYPE = 0x21
-        INVALID_VALUE = 0xffff
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, 2)
-          value = 0
-          2.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x21, 2
       end
 
       class Uint24 < DataType
-        TYPE = 0x22
-        INVALID_VALUE = 0xffffff
-        LENGTH = 3
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x22, 3
       end
 
       class Uint32 < DataType
-        TYPE = 0x23
-        INVALID_VALUE = 0xffffffff
-        LENGTH = 4
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x23, 4
       end
 
       class Uint40 < DataType
-        TYPE = 0x24
-        INVALID_VALUE = 0xffffffffff
-        LENGTH = 5
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x24, 5
       end
 
       class Uint48 < DataType
-        TYPE = 0x25
-        INVALID_VALUE = 0xffffffffffff
-        LENGTH = 6
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x25, 6
       end
 
       class Uint56 < DataType
-        TYPE = 0x26
-        INVALID_VALUE = 0xffffffffffffff
-        LENGTH = 7
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x26, 7
       end
 
       class Uint64 < DataType
-        TYPE = 0x27
-        INVALID_VALUE = 0xffffffffffffffff
-        LENGTH = 8
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def valid?
-          value != INVALID_VALUE
-        end
+        include UnsignedInt
+        configure 0x27, 8
       end
 
       #

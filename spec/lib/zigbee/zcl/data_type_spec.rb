@@ -15,7 +15,7 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
     end
   end
 
@@ -31,11 +31,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x20, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x20, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -58,11 +58,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x21, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x21, 0xff, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -85,11 +85,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x22, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x22, 0xff, 0xff, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -112,11 +112,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x23, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x23, 0xff, 0xff, 0xff, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -139,11 +139,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x24, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x24, 0xff, 0xff, 0xff, 0xff, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -166,11 +166,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x25, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -193,11 +193,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x26, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -220,11 +220,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ 0x27, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ 0x27, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -253,11 +253,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ type, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -282,11 +282,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ type, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -311,11 +311,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ type, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80, 0x00, 00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -340,11 +340,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ type, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -369,11 +369,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -398,11 +398,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -422,16 +422,23 @@ describe Zigbee::ZCL::DataType do
       expect(item).to be_a(Zigbee::ZCL::DataType::Int56)
       expect(item.value).to eq(0x11223344556677)
       expect(bytes.length).to eq(1)
+
+      bytes = [ type, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(item).to be_a(Zigbee::ZCL::DataType::Int56)
+      expect(item.value).to eq(-1)
+      expect(bytes.length).to eq(1)
+
     end
 
     it "handles invalid values" do
       bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do
@@ -456,11 +463,11 @@ describe Zigbee::ZCL::DataType do
     it "handles invalid values" do
       bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be false
+      expect(item.valid?).to be true
 
       bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
-      expect(item.invalid?).to be true
+      expect(item.valid?).to be false
     end
 
     it "throws for not enough data" do

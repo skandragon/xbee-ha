@@ -30,8 +30,8 @@ module Zigbee
           new
         end
 
-        def invalid?
-          false
+        def valid?
+          true
         end
       end
 
@@ -51,8 +51,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -76,8 +76,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -101,8 +101,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -126,8 +126,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -151,8 +151,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -176,8 +176,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -201,8 +201,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -226,8 +226,8 @@ module Zigbee
           new(value)
         end
 
-        def invalid?
-          value == INVALID_VALUE
+        def valid?
+          value != INVALID_VALUE
         end
       end
 
@@ -235,200 +235,96 @@ module Zigbee
       # Signed integer
       #
 
+      module SignedInt
+        def self.included(base)
+          base.send :include, InstanceMethods
+          base.extend ClassMethods
+        end
+
+        module InstanceMethods
+          attr_reader :value
+
+          def initialize(value)
+            @value = value
+          end
+
+          def valid?
+            value != invalid_value
+          end
+
+          private
+
+          def invalid_value
+            1 << (self.class.length * 8 - 1)
+          end
+
+        end
+
+        module ClassMethods
+          def configure(type, length)
+            self.const_set(:TYPE, type)
+            self.const_set(:LENGTH, length)
+            self.const_set(:INVALID_VALUE, 1 << (length * 8 - 1))
+          end
+
+          def length
+            self.const_get(:LENGTH)
+          end
+
+          def invalid_value
+            self.const_get(:INVALID_VALUE)
+          end
+
+          def decode(bytes)
+            ensure_has_bytes(bytes, length)
+            value = 0
+            length.times do
+              value = value << 8 | bytes.shift
+            end
+            value -= 1 << (length * 8) if value > invalid_value
+            new(value)
+          end
+        end
+      end
+
       class Int8 < DataType
-        TYPE = 0x28
-        INVALID_VALUE = 0x80
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, 1)
-          value = bytes.shift
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x28, 1
       end
 
       class Int16 < DataType
-        TYPE = 0x29
-        INVALID_VALUE = 0x8000
-        LENGTH = 2
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x29, 2
       end
 
       class Int24 < DataType
-        TYPE = 0x2a
-        INVALID_VALUE = 0x800000
-        LENGTH = 3
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x2a, 3
       end
 
       class Int32 < DataType
-        TYPE = 0x2b
-        INVALID_VALUE = 0x80000000
-        LENGTH = 4
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x2b, 4
       end
 
       class Int40 < DataType
-        TYPE = 0x2c
-        INVALID_VALUE = 0x8000000000
-        LENGTH = 5
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x2c, 5
       end
 
       class Int48 < DataType
-        TYPE = 0x2d
-        INVALID_VALUE = 0x800000000000
-        LENGTH = 6
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x2d, 6
       end
 
       class Int56 < DataType
-        TYPE = 0x2e
-        INVALID_VALUE = 0x80000000000000
-        LENGTH = 7
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x2e, 7
       end
 
       class Int64 < DataType
-        TYPE = 0x2f
-        INVALID_VALUE = 0x8000000000000000
-        LENGTH = 8
-
-        attr_reader :value
-
-        def initialize(value)
-          @value = value
-        end
-
-        def self.decode(bytes)
-          ensure_has_bytes(bytes, LENGTH)
-          value = 0
-          LENGTH.times do
-            value = value << 8 | bytes.shift
-          end
-          new(value)
-        end
-
-        def invalid?
-          value == INVALID_VALUE
-        end
+        include SignedInt
+        configure 0x2f, 8
       end
 
     end

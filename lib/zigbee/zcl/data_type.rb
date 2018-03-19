@@ -82,8 +82,8 @@ module Zigbee
           def decode(bytes)
             ensure_has_bytes(bytes, length)
             value = 0
-            length.times do
-              value = value << 8 | bytes.shift
+            length.times do |time|
+              value |= bytes.shift << (8 * time)
             end
             new(value)
           end
@@ -177,8 +177,8 @@ module Zigbee
           def decode(bytes)
             ensure_has_bytes(bytes, length)
             value = 0
-            length.times do
-              value = value << 8 | bytes.shift
+            length.times do |time|
+              value |= bytes.shift << (8 * time)
             end
             value -= 1 << (length * 8) if value > invalid_value
             new(value)

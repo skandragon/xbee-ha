@@ -54,7 +54,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x21 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x99 ]
+      bytes = [ type, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Uint16)
       expect(item.value).to eq(0x1122)
@@ -83,7 +83,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x22 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x99 ]
+      bytes = [ type, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Uint24)
       expect(item.value).to eq(0x112233)
@@ -112,7 +112,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x23 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x99 ]
+      bytes = [ type, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Uint32)
       expect(item.value).to eq(0x11223344)
@@ -141,7 +141,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x24 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x99 ]
+      bytes = [ type, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Uint40)
       expect(item.value).to eq(0x1122334455)
@@ -170,7 +170,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x25 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x99 ]
+      bytes = [ type, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Uint48)
       expect(item.value).to eq(0x112233445566)
@@ -199,7 +199,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x26 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x99 ]
+      bytes = [ type, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Uint56)
       expect(item.value).to eq(0x11223344556677)
@@ -228,7 +228,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x27 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99 ]
+      bytes = [ type, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Uint64)
       expect(item.value).to eq(0x1122334455667788)
@@ -290,7 +290,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x29 }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x99 ]
+      bytes = [ type, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int16)
       expect(item.value).to eq(0x1122)
@@ -302,7 +302,7 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
 
-      bytes = [ type, 0x80, 0x00 ]
+      bytes = [ type, 0x00, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be false
     end
@@ -319,7 +319,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x2a }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x99 ]
+      bytes = [ type, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int24)
       expect(item.value).to eq(0x112233)
@@ -331,7 +331,7 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
 
-      bytes = [ type, 0x80, 0x00, 00 ]
+      bytes = [ type, 0x00, 0x00, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be false
     end
@@ -348,7 +348,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x2b }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x99 ]
+      bytes = [ type, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int32)
       expect(item.value).to eq(0x11223344)
@@ -360,7 +360,7 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
 
-      bytes = [ type, 0x80, 0x00, 0x00, 0x00 ]
+      bytes = [ type, 0x00, 0x00, 0x00, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be false
     end
@@ -377,7 +377,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x2c }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x99 ]
+      bytes = [ type, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int40)
       expect(item.value).to eq(0x1122334455)
@@ -389,7 +389,7 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
 
-      bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00 ]
+      bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be false
     end
@@ -406,7 +406,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x2d }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x99 ]
+      bytes = [ type, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int48)
       expect(item.value).to eq(0x112233445566)
@@ -418,7 +418,7 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
 
-      bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00 ]
+      bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be false
     end
@@ -435,7 +435,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x2e }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x99 ]
+      bytes = [ type, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int56)
       expect(item.value).to eq(0x11223344556677)
@@ -454,7 +454,7 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
 
-      bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
+      bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be false
     end
@@ -471,7 +471,7 @@ describe Zigbee::ZCL::DataType do
     let(:type) { 0x2f }
 
     it "decodes" do
-      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99 ]
+      bytes = [ type, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x99 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int64)
       expect(item.value).to eq(0x1122334455667788)
@@ -483,7 +483,7 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
 
-      bytes = [ type, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]
+      bytes = [ type, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80 ]
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be false
     end

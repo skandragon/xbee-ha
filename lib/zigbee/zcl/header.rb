@@ -23,7 +23,7 @@ module Zigbee
         manufacturer_code = nil
         if frame_control.manufacturer_specific == 1
           ensure_has_bytes(bytes, 2)
-          manufacturer_code = bytes.shift << 8 | bytes.shift
+          manufacturer_code = bytes.shift | bytes.shift << 8
         end
         ensure_has_bytes(bytes, 2)
         transaction_sequence_number = bytes.shift
@@ -33,7 +33,7 @@ module Zigbee
 
       def encode
         ret = [ frame_control.encode ]
-        ret << [ (manufacturer_code >> 8), (manufacturer_code & 0xff) ] if frame_control.manufacturer_specific == 1
+        ret << [ (manufacturer_code & 0xff), (manufacturer_code >> 8) ] if frame_control.manufacturer_specific == 1
         ret << [ transaction_sequence_number, command_identifier ]
         ret.flatten
       end

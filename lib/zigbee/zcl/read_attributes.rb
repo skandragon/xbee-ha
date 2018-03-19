@@ -15,13 +15,13 @@ module Zigbee
         attribute_ids = []
         while bytes.length > 0
           ensure_has_bytes(bytes, 2)
-          attribute_ids << ((bytes.shift << 8) | bytes.shift)
+          attribute_ids << (bytes.shift | (bytes.shift << 8))
         end
         new(attribute_ids)
       end
 
       def encode
-        attribute_ids.map { |id| [ id >> 8, id & 0xff ] }.flatten
+        attribute_ids.map { |id| [ id & 0xff, id >> 8 ] }.flatten
       end
 
       class Builder

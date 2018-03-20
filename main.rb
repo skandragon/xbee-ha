@@ -21,6 +21,24 @@ def hexdump(data, msg = nil)
   end
 end
 
+def send_explicit(counter, node64, node16, cluster_id, profile_id, data,
+                  src_endpoint = 0, dst_endpoint = 0,
+                  broadcast_radius = 0, options = 0)
+  header = [
+      0x11,
+      counter,
+      node64,
+      node16,
+      src_endpoint,
+      dst_endpoint,
+      cluster_id,
+      profile_id,
+      broadcast_radius,
+      options
+  ].pack('CCQ>S>CCS>S>CC')
+  @xbee.send_api_frame(header + data)
+end
+
 def receive_and_dump
   apiframe = @xbee.read_api_frame
   hexdump apiframe.data, "<< "
@@ -48,21 +66,12 @@ loop do
     puts "Received device announce message."
     puts "Sending Active Endpoint Request"
 
-    bytes = [
-        0x11,
-        @counter,
-        frame.node64,
+    data = [
+        0xaa,
         frame.node16,
-        0,
-        0,
-        0x0005,
-        0x0000,
-        0,
-        0x00,
-        0xaa, frame.node16 & 0x00ff, frame.node16 >> 8,
-    ].pack('CCQ>S>CCS>S>CCCCC')
+    ].pack('CS<')
 
-    @xbee.send_api_frame(bytes)
+    send_explicit(@counter, frame.node64, frame.node16, 0x0005, 0x0000, data)
   end
 
   if frame.cluster_id == 0x8005
@@ -71,20 +80,12 @@ loop do
     puts "  Active Endpoint: "  + frame.app_data[5].ord.to_s
     puts "Sending Simple Descriptor Request"
 
-    bytes = [
-        0x11,
-        @counter,
-        frame.node64,
+    data = [
+        0xaa,
         frame.node16,
-        0,
-        0,
-        0x0004,
-        0x0000,
-        0,
-        0x00,
-        0xaa, frame.node16 & 0x00ff, frame.node16 >> 8, frame.app_data[5].ord
-    ].pack('CCQ>S>CCS>S>CCCCCC')
-    @xbee.send_api_frame(bytes)
+        frame.app_data[5].ord
+    ].pack('CS<C')
+    send_explicit(@counter, frame.node64, frame.node16, 0x0004, 0x0000, data)
   end
 
   if frame.cluster_id == 0x8004
@@ -115,21 +116,11 @@ loop do
     puts " Output cluster count: #{output_cluster_count}"
     puts "   " + output_cluster_ids.map { |x| '%04x' % x }.join(", ")
 
-    bytes = [
-        0x11,
-        @counter,
-        frame.node64,
-        frame.node16,
-        0,
-        endpoint,
-        0x0402,
-        0x0104,
-        0,
-        0x00,
+    data = [
         0x00, @counter, 0x06,
         0x00, 0x00, 0x10, 0x00, 0x40, 0x00
-    ].pack('CCQ>S>CCS>S>CCCCCCS>CS>S>S>')
-    @xbee.send_api_frame(bytes)
+    ].pack('CCCCS>CS>S>S>')
+    send_explicit(@counter, frame.node64, frame.node16, 0x0402, 0x0104, data, 0, endpoint)
   end
 
 end

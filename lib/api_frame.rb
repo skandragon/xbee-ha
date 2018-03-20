@@ -181,7 +181,7 @@ class Xbee
     end
 
     def encode
-      ret = [@seq, @node64, @node16, @source_endpoint, @destination_endpoint, @cluster_id, @profile_id, @broadcast_radius, @options, @app_data].pack('CQ>S>CCS>S>CCa*')
+      [@seq, @node64, @node16, @source_endpoint, @destination_endpoint, @cluster_id, @profile_id, @broadcast_radius, @options, @app_data].pack('CQ>S>CCS>S>CCa*')
     end
   end
 

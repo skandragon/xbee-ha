@@ -1,5 +1,5 @@
 module ArrayUtils
-  def self.included base
+  def self.included(base)
     base.send :include, InstanceMethods
     base.extend ClassMethods
   end

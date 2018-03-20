@@ -5,6 +5,13 @@ module ArrayUtils
   end
 
   module InstanceMethods
+    def encode_uint16(value)
+      self.class.encode_uint16(value)
+    end
+
+    def extract_uint16(value)
+      self.class.extract_uint16(value)
+    end
   end
 
   module ClassMethods
@@ -15,6 +22,14 @@ module ArrayUtils
     def ensure_has_bytes(array, expected)
       ensure_array(array)
       raise ArgumentError.new("Expected #{expected} bytes, but only #{array.length} remain") if array.length < expected
+    end
+
+    def encode_uint16(value)
+      [ value & 0xff, (value >> 8) & 0xff ]
+    end
+
+    def extract_uint16(bytes)
+      bytes.shift | bytes.shift << 8
     end
   end
 end

@@ -18,12 +18,10 @@ class Xbee
       char = getbyte
     end
 
-    @length = getbyte << 8
-    @length += getbyte
+    length_bytes = getbytes(2)
+    @length = (length_bytes[0] << 8) | length_bytes[1]
 
-    @length.times do
-      buf << getbyte
-    end
+    getbytes(@length).each { |byte| buf << byte }
 
     @checksum = getbyte
 
@@ -83,6 +81,30 @@ class Xbee
       byte = byte ^ 0x20
     end
     byte
+  end
+
+  def getbytes(length)
+    ret = []
+    escape_needed = false
+
+    while length > 0
+      bytes = serial_port.read(length)
+      bytes.length.times do |index|
+        byte = bytes[index].ord
+        if byte == 0x7d
+          escape_needed = true
+        else
+          if escape_needed
+            ret << (byte ^ 0x20)
+            escape_needed = false
+          else
+            ret << byte
+          end
+        end
+      end
+      length -= ret.length
+    end
+    ret
   end
 
   def escape(data)

@@ -242,6 +242,7 @@ class Xbee
   end
 
   class AtCommandResponseFrame < APIFrame
+    attr_reader :seq, :command, :status, :value
     def fully_decoded ; true ; end
 
     def self.identifier
@@ -253,8 +254,8 @@ class Xbee
     end
 
     def initialize(data)
-      seq, command, status, args = data.unpack('Ca2Ca*')
-      value = decode_args(args)
+      @seq, @command, @status, args = data.unpack('Ca2Ca*')
+      @value = decode_args(args)
 
       {
         sequence: seq,
@@ -285,6 +286,8 @@ class Xbee
   end
 
   class ZigbeeTransmitStatusFrame < APIFrame
+    attr_reader :seq, :node16, :retry_count, :delivery_status, :discovery_status
+
     def self.identifier
       0x8b
     end
@@ -294,7 +297,7 @@ class Xbee
     end
 
     def initialize(data)
-      seq, node16, retry_count, delivery_status, discovery_status = data.unpack('CS>CCC')
+      @seq, @node16, @retry_count, @delivery_status, @discovery_status = data.unpack('CS>CCC')
 
       {
         sequence: seq,
@@ -332,6 +335,14 @@ class Xbee
     attr_reader :node64_string, :node16_string, :clusterid_string, :profile_string
 
     def fully_decoded ; true ; end
+
+    def to_s
+      "RECV #{node64_string}/#{node16_string} cl #{clusterid_string} pr #{profile_string} 0x#{source_endpoint.to_s(16)}->0x#{destination_endpoint.to_s(16)}"
+    end
+
+    def inspect
+      to_s
+    end
 
     def self.identifier
       0x91

@@ -1,0 +1,495 @@
+Frame 3789: 65 bytes on wire (520 bits), 65 bytes captured (520 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0x0000, Src: 0xf797
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 110
+    Destination PAN: 0x80b6
+    Destination: 0x0000
+    Source: 0xf797
+    [Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)]
+    [Origin: 3787]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: Broadcast, Src: 0xf797
+    Frame Control Field: 0x1208, Frame Type: Data, Discover Route: Suppress, Security, Extended Source Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 00.. .... = Discover Route: Suppress (0x0)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...1 .... .... .... = Extended Source: True
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0xfffd
+    Source: 0xf797
+    Radius: 30
+    Sequence Number: 100
+    Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 1
+        Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)
+        Key Sequence Number: 0
+        Message Integrity Code: 70f7db3e
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 0, Src Endpt: 0
+    Frame Control Field: Data (0x08)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 10.. = Delivery Mode: Broadcast (0x2)
+        ..0. .... = Security: False
+        .0.. .... = Acknowledgement Request: False
+        0... .... = Extended Header: False
+    Destination Endpoint: 0
+    Device Announcement (Cluster ID: 0x0013)
+    Profile: ZigBee Device Profile (0x0000)
+    Source Endpoint: 0
+    Counter: 167
+ZigBee Device Profile, Device Announcement, Device: Ember_00:0b:1b:64:c1
+    Sequence Number: 129
+    Device: 0xf797
+    Extended Address: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)
+    Capability Information: 0x80
+
+
+Frame 3791: 54 bytes on wire (432 bits), 54 bytes captured (432 bits) on interface 0
+IEEE 802.15.4 Data, Dst: Broadcast, Src: 0x0000
+    Frame Control Field: 0x8841, Frame Type: Data, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 168
+    Destination PAN: 0x80b6
+    Destination: 0xffff
+    Source: 0x0000
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: Broadcast, Src: 0xf797
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0xfffd
+    Source: 0xf797
+    Radius: 29
+    Sequence Number: 99
+    [Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)]
+    [Origin: 3787]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 3940
+        Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)
+        Key Sequence Number: 0
+        Message Integrity Code: 7ea87458
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 0, Src Endpt: 0
+    Frame Control Field: Data (0x08)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 10.. = Delivery Mode: Broadcast (0x2)
+        ..0. .... = Security: False
+        .0.. .... = Acknowledgement Request: False
+        0... .... = Extended Header: False
+    Destination Endpoint: 0
+    Match Descriptor Request (Cluster ID: 0x0006)
+    Profile: ZigBee Device Profile (0x0000)
+    Source Endpoint: 0
+    Counter: 166
+ZigBee Device Profile, Match Descriptor Request, Device: 0xfffd, Profile: 0x0104
+    Sequence Number: 1
+    Device: 0xfffd
+    Profile: 0x0104
+    Input Cluster Count: 0
+    Output Cluster Count: 1
+    Output Cluster List
+        Output Cluster: 1280
+
+
+Frame 3795: 51 bytes on wire (408 bits), 51 bytes captured (408 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 170
+    Destination PAN: 0x80b6
+    Destination: 0xf797
+    Source: 0x0000
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0xf797
+    Source: 0x0000
+    Radius: 10
+    Sequence Number: 116
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 3941
+        Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)
+        Key Sequence Number: 0
+        Message Integrity Code: 99ae3d4f
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 0, Src Endpt: 0
+    Frame Control Field: Data (0x40)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 00.. = Delivery Mode: Unicast (0x0)
+        ..0. .... = Security: False
+        .1.. .... = Acknowledgement Request: True
+        0... .... = Extended Header: False
+    Destination Endpoint: 0
+    Match Descriptor Response (Cluster ID: 0x8006)
+    Profile: ZigBee Device Profile (0x0000)
+    Source Endpoint: 0
+    Counter: 32
+ZigBee Device Profile, Match Descriptor Response, Device: 0x0000, Status: Success
+  Sequence Number: 1
+  Status: Success (0)
+  Device: 0x0000
+  Endpoint Count: 1
+  Matching Endpoint List
+      Endpoint: 1
+
+
+Frame 3803: 48 bytes on wire (384 bits), 48 bytes captured (384 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 171
+    Destination PAN: 0x80b6
+    Destination: 0xf797
+    Source: 0x0000
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0xf797
+    Source: 0x0000
+    Radius: 10
+    Sequence Number: 117
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 3943
+        Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)
+        Key Sequence Number: 0
+        Message Integrity Code: a0122286
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 0, Src Endpt: 0
+    Frame Control Field: Data (0x00)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 00.. = Delivery Mode: Unicast (0x0)
+        ..0. .... = Security: False
+        .0.. .... = Acknowledgement Request: False
+        0... .... = Extended Header: False
+    Destination Endpoint: 0
+    Node Descriptor Request (Cluster ID: 0x0002)
+    Profile: ZigBee Device Profile (0x0000)
+    Source Endpoint: 0
+    Counter: 33
+ZigBee Device Profile, Node Descriptor Request, Device: 0xf797
+    Sequence Number: 1
+    Device: 0xf797
+
+
+Frame 3809: 48 bytes on wire (384 bits), 48 bytes captured (384 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 172
+    Destination PAN: 0x80b6
+    Destination: 0xf797
+    Source: 0x0000
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0xf797
+    Source: 0x0000
+    Radius: 10
+    Sequence Number: 118
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 3944
+        Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)
+        Key Sequence Number: 0
+        Message Integrity Code: a33275c3
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 0, Src Endpt: 0
+    Frame Control Field: Data (0x00)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 00.. = Delivery Mode: Unicast (0x0)
+        ..0. .... = Security: False
+        .0.. .... = Acknowledgement Request: False
+        0... .... = Extended Header: False
+    Destination Endpoint: 0
+    Active Endpoint Request (Cluster ID: 0x0005)
+    Profile: ZigBee Device Profile (0x0000)
+    Source Endpoint: 0
+    Counter: 34
+ZigBee Device Profile, Active Endpoint Request, Device: 0xf797
+    Sequence Number: 2
+    Device: 0xf797
+
+
+Frame 3811: 51 bytes on wire (408 bits), 51 bytes captured (408 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0x0000, Src: 0xf797
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 117
+    Destination PAN: 0x80b6
+    Destination: 0x0000
+    Source: 0xf797
+    [Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)]
+    [Origin: 3787]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: 0x0000, Src: 0xf797
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0x0000
+    Source: 0xf797
+    Radius: 30
+    Sequence Number: 105
+    [Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)]
+    [Origin: 3787]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 4
+        Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)
+        Key Sequence Number: 0
+        Message Integrity Code: bb47dcf0
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 0, Src Endpt: 0
+    Frame Control Field: Data (0x00)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 00.. = Delivery Mode: Unicast (0x0)
+        ..0. .... = Security: False
+        .0.. .... = Acknowledgement Request: False
+        0... .... = Extended Header: False
+    Destination Endpoint: 0
+    Active Endpoint Response (Cluster ID: 0x8005)
+    Profile: ZigBee Device Profile (0x0000)
+    Source Endpoint: 0
+    Counter: 169
+ZigBee Device Profile, Active Endpoint Response, Device: 0xf797, Status: Success
+    Sequence Number: 2
+    Status: Success (0)
+    Device: 0xf797
+    Endpoint Count: 1
+    Active Endpoint List
+        Endpoint: 1
+
+Frame 3815: 49 bytes on wire (392 bits), 49 bytes captured (392 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 173
+    Destination PAN: 0x80b6
+    Destination: 0xf797
+    Source: 0x0000
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0xf797
+    Source: 0x0000
+    Radius: 10
+    Sequence Number: 119
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 3945
+        Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)
+        Key Sequence Number: 0
+        Message Integrity Code: 072564ba
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 0, Src Endpt: 0
+    Frame Control Field: Data (0x00)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 00.. = Delivery Mode: Unicast (0x0)
+        ..0. .... = Security: False
+        .0.. .... = Acknowledgement Request: False
+        0... .... = Extended Header: False
+    Destination Endpoint: 0
+    Simple Descriptor Request (Cluster ID: 0x0004)
+    Profile: ZigBee Device Profile (0x0000)
+    Source Endpoint: 0
+    Counter: 35
+ZigBee Device Profile, Simple Descriptor Request, Device: 0xf797, Endpoint: 1
+    Sequence Number: 3
+    Device: 0xf797
+    Endpoint: 1
+
+
+
+Frame 3821: 50 bytes on wire (400 bits), 50 bytes captured (400 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 174
+    Destination PAN: 0x80b6
+    Destination: 0xf797
+    Source: 0x0000
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: 0xf797, Src: 0x0000
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0xf797
+    Source: 0x0000
+    Radius: 10
+    Sequence Number: 120
+    [Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)]
+    [Origin: 1]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 3946
+        Extended Source: Dresden-_ff:ff:01:72:89 (00:21:2e:ff:ff:01:72:89)
+        Key Sequence Number: 0
+        Message Integrity Code: 1cb62887
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 1, Src Endpt: 1
+    Frame Control Field: Data (0x00)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 00.. = Delivery Mode: Unicast (0x0)
+        ..0. .... = Security: False
+        .0.. .... = Acknowledgement Request: False
+        0... .... = Extended Header: False
+    Destination Endpoint: 1
+    Cluster: Intruder Alarm System Zone (0x0500)
+    Profile: Home Automation (0x0104)
+    Source Endpoint: 1
+    Counter: 38
+ZigBee Cluster Library Frame, Command: Read Attributes, Seq: 4
+
+
+Frame 3823: 54 bytes on wire (432 bits), 54 bytes captured (432 bits) on interface 0
+IEEE 802.15.4 Data, Dst: 0x0000, Src: 0xf797
+    Frame Control Field: 0x8861, Frame Type: Data, Acknowledge Request, PAN ID Compression, Destination Addressing Mode: Short/16-bit, Frame Version: IEEE Std 802.15.4-2003, Source Addressing Mode: Short/16-bit
+    Sequence Number: 121
+    Destination PAN: 0x80b6
+    Destination: 0x0000
+    Source: 0xf797
+    [Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)]
+    [Origin: 3787]
+    Frame Check Sequence (TI CC24xx format): FCS OK
+ZigBee Network Layer Data, Dst: 0x0000, Src: 0xf797
+    Frame Control Field: 0x0248, Frame Type: Data, Discover Route: Enable, Security Data
+        .... .... .... ..00 = Frame Type: Data (0x0)
+        .... .... ..00 10.. = Protocol Version: 2
+        .... .... 01.. .... = Discover Route: Enable (0x1)
+        .... ...0 .... .... = Multicast: False
+        .... ..1. .... .... = Security: True
+        .... .0.. .... .... = Source Route: False
+        .... 0... .... .... = Destination: False
+        ...0 .... .... .... = Extended Source: False
+        ..0. .... .... .... = End Device Initiator: False
+    Destination: 0x0000
+    Source: 0xf797
+    Radius: 30
+    Sequence Number: 109
+    [Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)]
+    [Origin: 3787]
+    ZigBee Security Header
+        Security Control Field: 0x28, Key Id: Network Key, Extended Nonce
+            ...0 1... = Key Id: Network Key (0x1)
+            ..1. .... = Extended Nonce: True
+        Frame Counter: 6
+        Extended Source: Ember_00:0b:1b:64:c1 (00:0d:6f:00:0b:1b:64:c1)
+        Key Sequence Number: 0
+        Message Integrity Code: 25303637
+        [Key: 00bc90fcbc0040284024980064d800b4]
+        [Key Origin: 205]
+ZigBee Application Support Layer Data, Dst Endpt: 1, Src Endpt: 1
+    Frame Control Field: Data (0x40)
+        .... ..00 = Frame Type: Data (0x0)
+        .... 00.. = Delivery Mode: Unicast (0x0)
+        ..0. .... = Security: False
+        .1.. .... = Acknowledgement Request: True
+        0... .... = Extended Header: False
+    Destination Endpoint: 1
+    Cluster: Intruder Alarm System Zone (0x0500)
+    Profile: Home Automation (0x0104)
+    Source Endpoint: 1
+    Counter: 171
+ZigBee Cluster Library Frame, Command: Read Attributes Response, Seq: 4

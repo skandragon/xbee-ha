@@ -6,4 +6,4 @@ module ClusterIds
   DIAGNOSTICS = 0x0b05
   TEMPERATURE_MEASUREMENT = 0x0402
   IAS_ZONE = 0x0500
-end
+ end

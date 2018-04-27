@@ -26,9 +26,6 @@ module Zigbee
       class NoData < DataType
         TYPE = 0x00
 
-        def initialize
-        end
-
         def self.decode(_bytes)
           new
         end

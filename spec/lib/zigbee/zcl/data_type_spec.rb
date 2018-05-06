@@ -496,5 +496,4 @@ describe Zigbee::ZCL::DataType do
     end
   end
 
-
 end

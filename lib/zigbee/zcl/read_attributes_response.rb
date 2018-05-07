@@ -5,37 +5,37 @@ module Zigbee
     class ReadAttributesResponse
       include ArrayUtils
 
-      attr_reader :responses
+      attr_reader :attribute_ids
 
-      def initialize(responses)
-        @responses = Array(responses)
+      def initialize(attribute_ids)
+        @attribute_ids = Array(attribute_ids)
       end
 
       def self.decode(bytes)
-        responses = []
+        attribute_ids = []
         while bytes.length > 0
           ensure_has_bytes(bytes, 2)
-          responses << (bytes.shift | bytes.shift << 8)
+          attribute_ids << (bytes.shift | bytes.shift << 8)
         end
-        new(responses)
+        new(attribute_ids)
       end
 
       def encode
-        responses.map { |id| [ id & 0xff, id >> 8 ] }.flatten
+        attribute_ids.map { |id| [ id & 0xff, id >> 8 ] }.flatten
       end
 
       class Builder
         def initialize
-          @responses = []
+          @attribute_ids = []
         end
 
-        def responses(value)
-          @responses = value
+        def attribute_ids(value)
+          @attribute_ids = value
           self
         end
 
         def build
-          ReadAttributesResponse.new(@responses)
+          ReadAttributesResponse.new(@attribute_ids)
         end
       end
     end

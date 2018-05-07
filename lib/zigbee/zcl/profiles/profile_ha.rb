@@ -60,7 +60,7 @@ module ProfileHA
       id: CLUSTER_BASIC,
       name: 'BASIC',
       server: {
-        attrs: [
+        attributes: [
           {
             id: 0x0000,
             name: 'ZCLVersion',
@@ -165,7 +165,7 @@ module ProfileHA
 
       },
       client: {
-        attrs: [],
+        attributes: [],
         commands_received: [],
         commands_generated: []
       }
@@ -174,7 +174,7 @@ module ProfileHA
       id: CLUSTER_POWER,
       name: 'POWER',
       server: {
-        attrs: [
+        attributes: [
           {
             id: 0x0000,
             name: 'MainsVoltage',
@@ -191,7 +191,7 @@ module ProfileHA
         commands_generated: []
       },
       client: {
-        attrs: [],
+        attributes: [],
         commands_received: [],
         commands_generated: []
       }

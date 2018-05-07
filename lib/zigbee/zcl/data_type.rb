@@ -7,6 +7,14 @@ module Zigbee
 
       attr_reader :type
 
+      def self.class_for(value)
+        if value.is_a?(Symbol) || value.is_a?(String)
+          MAP_SYMBOL[value.to_sym]
+        else
+          MAP[value]
+        end
+      end
+
       def self.decode(bytes)
         type = bytes.shift
 
@@ -26,8 +34,15 @@ module Zigbee
       class NoData < DataType
         TYPE = 0x00
 
+        def initialize(value)
+        end
+
         def self.decode(_bytes)
-          new
+          new(nil)
+        end
+
+        def encode
+          []
         end
 
         def valid?
@@ -225,6 +240,46 @@ module Zigbee
         include SignedInt
         configure 0x2f, 8
       end
+
+      MAP = {
+          0x00 => NoData,
+          0x20 => Uint8,
+          0x21 => Uint16,
+          0x22 => Uint24,
+          0x23 => Uint32,
+          0x24 => Uint40,
+          0x25 => Uint48,
+          0x26 => Uint56,
+          0x27 => Uint64,
+          0x28 => Int8,
+          0x29 => Int16,
+          0x2a => Int24,
+          0x2b => Int32,
+          0x2c => Int40,
+          0x2d => Int48,
+          0x2e => Int56,
+          0x2f => Int64
+      }
+
+      MAP_SYMBOL = {
+          nodata: NoData,
+          uint8: Uint8,
+          uint16: Uint16,
+          uint24: Uint24,
+          uint32: Uint32,
+          uint40: Uint40,
+          uint48: Uint48,
+          uint56: Uint56,
+          uint64: Uint64,
+          int8: Int8,
+          int16: Int16,
+          int24: Int24,
+          int32: Int32,
+          int40: Int40,
+          int48: Int48,
+          int56: Int56,
+          int64: Int64
+      }
 
     end
   end

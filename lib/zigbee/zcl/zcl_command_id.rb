@@ -2,7 +2,11 @@ module Zigbee
   module ZCL
     module ZCLCommand
       MAP = {
-        0x00 => 'Read Attributes',
+        0x00 => {
+          name: 'Read Attributes',
+          id: 0x00,
+          klass: Zigbee::ZCL::ReadAttributes
+        },
         0x01 => 'Read Attributes Response',
         0x02 => 'Write Attributes',
         0x03 => 'Write Attributes Undivided',

@@ -42,7 +42,6 @@ describe Zigbee::ZCL::ReadAttributesResponse::Builder do
     expect(z.attribute_ids).to eq([0x1234])
   end
 
-
   it "builds without specifying any ids" do
     builder = Zigbee::ZCL::ReadAttributesResponse::Builder.new
     z = builder.build

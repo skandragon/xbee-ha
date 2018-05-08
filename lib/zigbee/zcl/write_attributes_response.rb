@@ -4,7 +4,7 @@ require_relative './zcl_command'
 
 module Zigbee
   module ZCL
-    class ReadAttributesResponse < ZCLCommand
+    class WriteAttributesResponse < ZCLCommand
       include ArrayUtils
 
       attr_reader :responses
@@ -36,49 +36,30 @@ module Zigbee
         end
 
         def build
-          ReadAttributesResponse.new(@responses)
+          WriteAttributesResponse.new(@responses)
         end
       end
 
       class Response
         include ArrayUtils
 
-        attr_reader :id, :status, :data_type, :value
+        attr_reader :id, :status
 
-        def initialize(id, status, data_type, value)
+        def initialize(id, status)
           @id = id
           @status = status
-          @data_type = data_type
-          @value = value
         end
 
-        # TODO: add encoding/decoding for bags, sets, etc.
-
         def encode
-          ret = [ id & 0xff, id >> 8, status ]
-          if status == 0x00
-            ret << data_type
-            ret << Zigbee::ZCL::DataType.class_for(data_type).new(value).encode_data
-          end
+          ret = [ status, id & 0xff, id >> 8 ]
           ret.flatten
         end
 
         def self.decode(bytes)
           ensure_has_bytes(bytes, 3)
-          attribute = (bytes.shift | bytes.shift << 8)
           status = bytes.shift
-          if status == 0x00
-            ensure_has_bytes(bytes, 1)
-            data_type = bytes.shift
-            data_class = Zigbee::ZCL::DataType.class_for(data_type).decode_data(bytes)
-            value = nil
-            if data_class.respond_to?(:value)
-              value = data_class.value
-            end
-            new(attribute, status, data_type, value)
-          else
-            new(attribute, status, nil, nil)
-          end
+          attribute = (bytes.shift | bytes.shift << 8)
+          new(attribute, status)
         end
       end
     end

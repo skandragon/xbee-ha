@@ -2,7 +2,7 @@ require_relative '../../utils'
 
 module Zigbee
   module ZCL
-    class ReadAttributes
+    class ReadAttributes < ZCLCommand
       include ArrayUtils
 
       attr_reader :attribute_ids

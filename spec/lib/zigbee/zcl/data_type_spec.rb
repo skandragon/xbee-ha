@@ -19,6 +19,11 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item.valid?).to be true
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::NoData.new(nil).encode
+      expect(item).to eq([type])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Uint8 do
@@ -47,6 +52,11 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint8.new(0x99).encode
+      expect(item).to eq([type, 0x99])
     end
   end
 
@@ -77,6 +87,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint16.new(0x9988).encode
+      expect(item).to eq([type, 0x88, 0x99])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Uint24 do
@@ -105,6 +120,11 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint24.new(0x998877).encode
+      expect(item).to eq([type, 0x77, 0x88, 0x99])
     end
   end
 
@@ -135,6 +155,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint32.new(0x99887766).encode
+      expect(item).to eq([type, 0x66, 0x77, 0x88, 0x99])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Uint40 do
@@ -163,6 +188,11 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint40.new(0x9988776655).encode
+      expect(item).to eq([type, 0x55, 0x66, 0x77, 0x88, 0x99])
     end
   end
 
@@ -193,6 +223,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint48.new(0x998877665544).encode
+      expect(item).to eq([type, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Uint56 do
@@ -221,6 +256,11 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint56.new(0x99887766554433).encode
+      expect(item).to eq([type, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99])
     end
   end
 
@@ -251,6 +291,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Uint64.new(0x9988776655443322).encode
+      expect(item).to eq([type, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99])
+    end
   end
 
   #
@@ -265,6 +310,14 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int8)
       expect(item.value).to eq(0x11)
+      expect(bytes.length).to eq(1)
+    end
+
+    it "decodes negative values" do
+      bytes = [ type, 0x81, 0x99 ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(item).to be_a(Zigbee::ZCL::DataType::Int8)
+      expect(item.value).to eq(-127)
       expect(bytes.length).to eq(1)
     end
 
@@ -284,6 +337,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int8.new(0x99).encode
+      expect(item).to eq([type, 0x99])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Int16 do
@@ -294,6 +352,14 @@ describe Zigbee::ZCL::DataType do
       item = Zigbee::ZCL::DataType.decode(bytes)
       expect(item).to be_a(Zigbee::ZCL::DataType::Int16)
       expect(item.value).to eq(0x1122)
+      expect(bytes.length).to eq(1)
+    end
+
+    it "decodes negative values" do
+      bytes = [ type, 0x00, 0x81, 0x99 ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(item).to be_a(Zigbee::ZCL::DataType::Int16)
+      expect(item.value).to eq(-32512)
       expect(bytes.length).to eq(1)
     end
 
@@ -312,6 +378,16 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int16.new(1025).encode
+      expect(item).to eq([type, 0x01, 0x04])
+    end
+
+    it "encodes negative values" do
+      item = Zigbee::ZCL::DataType::Int16.new(-32512).encode
+      expect(item).to eq([type, 0x00, 0x81])
     end
   end
 
@@ -342,6 +418,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int24.new(0x123456).encode
+      expect(item).to eq([type, 0x56, 0x34, 0x12])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Int32 do
@@ -370,6 +451,11 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int32.new(0x11223344).encode
+      expect(item).to eq([type, 0x44, 0x33, 0x22, 0x11])
     end
   end
 
@@ -400,6 +486,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int40.new(0x1122334455).encode
+      expect(item).to eq([type, 0x55, 0x44, 0x33, 0x22, 0x11])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Int48 do
@@ -428,6 +519,11 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int48.new(0x112233445566).encode
+      expect(item).to eq([type, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11])
     end
   end
 
@@ -465,6 +561,11 @@ describe Zigbee::ZCL::DataType do
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
     end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int56.new(0x11223344556677).encode
+      expect(item).to eq([type, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11])
+    end
   end
 
   describe Zigbee::ZCL::DataType::Int64 do
@@ -476,6 +577,14 @@ describe Zigbee::ZCL::DataType do
       expect(item).to be_a(Zigbee::ZCL::DataType::Int64)
       expect(item.value).to eq(0x1122334455667788)
       expect(bytes.length).to eq(1)
+    end
+
+    it "decodes negative values" do
+      bytes = [ type, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x99 ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(bytes.length).to eq(1)
+      expect(item).to be_a(Zigbee::ZCL::DataType::Int64)
+      expect(item.value).to eq(-7383520307673025758)
     end
 
     it "handles invalid values" do
@@ -493,6 +602,11 @@ describe Zigbee::ZCL::DataType do
       expect {
         Zigbee::ZCL::DataType.decode(bytes)
       }.to raise_error(ArgumentError)
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::Int64.new(-7383520307673025758).encode
+      expect(item).to eq([type, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99])
     end
   end
 

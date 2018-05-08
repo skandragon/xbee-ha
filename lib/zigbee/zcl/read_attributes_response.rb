@@ -55,7 +55,7 @@ module Zigbee
           ret = [ id & 0xff, id >> 8, status ]
           if status == 0x00
             ret << data_type
-            ret << Zigbee::ZCL::DataType.class_for(data_type).new(value).encode
+            ret << Zigbee::ZCL::DataType.class_for(data_type).new(value).encode_data
           end
           ret.flatten
         end
@@ -67,7 +67,7 @@ module Zigbee
           if status == 0x00
             ensure_has_bytes(bytes, 1)
             data_type = bytes.shift
-            data_class = Zigbee::ZCL::DataType.class_for(data_type).decode(bytes)
+            data_class = Zigbee::ZCL::DataType.class_for(data_type).decode_data(bytes)
             value = nil
             if data_class.respond_to?:value
               value = data_class.value

@@ -24,11 +24,19 @@ module Zigbee
           throw ArgumentError.new("Cannot find data type for type 0x#{type.to_s(16)}")
         end
         @type = type
-        subclass.decode(bytes)
+        subclass.decode_data(bytes)
+      end
+
+      def decode_data(bytes)
+        raise StandardError.new("Invalid data type implementation, needs to define #decode_data")
       end
 
       def encode
-        raise StandardError.new("Invalid data type implementation, needs to define encode")
+        [ self.class.const_get(:TYPE) ] + encode_data
+      end
+
+      def encode_data
+        raise StandardError.new("Invalid data type implementation, needs to define #encode_data")
       end
 
       class NoData < DataType
@@ -37,11 +45,11 @@ module Zigbee
         def initialize(value)
         end
 
-        def self.decode(_bytes)
+        def self.decode_data(_bytes)
           new(nil)
         end
 
-        def encode
+        def encode_data
           []
         end
 
@@ -71,12 +79,21 @@ module Zigbee
             value != invalid_value
           end
 
+          def encode_data
+            length = self.class.const_get(:LENGTH)
+            val = @value
+            length.times.map {
+              ret = val & 0xff
+              val >>= 8
+              ret
+            }
+          end
+
           private
 
           def invalid_value
             self.class.const_get(:INVALID_VALUE)
           end
-
         end
 
         module ClassMethods
@@ -94,7 +111,7 @@ module Zigbee
             self.const_get(:LENGTH)
           end
 
-          def decode(bytes)
+          def decode_data(bytes)
             ensure_has_bytes(bytes, length)
             value = 0
             length.times do |time|
@@ -166,12 +183,21 @@ module Zigbee
             value != invalid_value
           end
 
+          def encode_data
+            length = self.class.const_get(:LENGTH)
+            val = @value
+            length.times.map {
+              ret = val & 0xff
+              val >>= 8
+              ret
+            }
+          end
+
           private
 
           def invalid_value
             1 << (self.class.length * 8 - 1)
           end
-
         end
 
         module ClassMethods
@@ -189,7 +215,7 @@ module Zigbee
             self.const_get(:INVALID_VALUE)
           end
 
-          def decode(bytes)
+          def decode_data(bytes)
             ensure_has_bytes(bytes, length)
             value = 0
             length.times do |time|

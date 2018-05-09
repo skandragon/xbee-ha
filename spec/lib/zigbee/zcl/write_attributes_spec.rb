@@ -25,6 +25,17 @@ describe Zigbee::ZCL::WriteAttributes do
     expect(z.requests.first.data_type).to eq(0x00)
   end
 
+  it "decodes list of attributes with data types that have values" do
+    bytes = [ 0x88, 0x99, 0x23, 0x44, 0x33, 0x22, 0x11 ]
+    z = Zigbee::ZCL::WriteAttributes.decode(bytes)
+    expect(bytes.length).to eq(0)
+    expect(z.requests.length).to eq(1)
+    expect(z.requests.first.id).to eq(0x9988)
+    expect(z.requests.first.data_type).to eq(0x23)
+    expect(z.requests.first.value).to eq(0x11223344)
+  end
+
+
   it "return empty array if no bytes" do
     values = []
     z = Zigbee::ZCL::WriteAttributes.decode(values)

@@ -35,7 +35,6 @@ describe Zigbee::ZCL::WriteAttributes do
     expect(z.requests.first.value).to eq(0x11223344)
   end
 
-
   it "return empty array if no bytes" do
     values = []
     z = Zigbee::ZCL::WriteAttributes.decode(values)

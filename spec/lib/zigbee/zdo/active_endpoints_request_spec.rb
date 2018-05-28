@@ -1,28 +1,26 @@
 require 'rspec'
 require 'spec_helper'
 
-require 'zigbee/zcl/constants'
-require 'zigbee/zdo/simple_descriptor_request'
+require 'zigbee/zdo/active_endpoints_request'
 
-describe Zigbee::ZDO::SimpleDescriptorRequest do
+describe Zigbee::ZDO::ActiveEndpointsRequest do
 
-  it "decodes with input and output clusters" do
-    bytes = [ 0x11, 0x22, 0x33 ]
-    z = Zigbee::ZDO::SimpleDescriptorRequest.decode(bytes)
+  it "decodes" do
+    bytes = [ 0x11, 0x22 ]
+    z = Zigbee::ZDO::ActiveEndpointsRequest.decode(bytes)
     expect(bytes.length).to eq(0)
     expect(z.address).to eq(0x2211)
-    expect(z.endpoint).to eq(0x33)
   end
 
   it "throws if an odd number of bytes remain" do
-    values = [ 0x01, 0x05 ]
+    values = [ 0x01 ]
     expect {
-      Zigbee::ZDO::SimpleDescriptorRequest.decode(values)
+      Zigbee::ZDO::ActiveEndpointsRequest.decode(values)
     }.to raise_error(ArgumentError)
   end
 
   it "encodes" do
-    z = Zigbee::ZDO::SimpleDescriptorRequest.new(0x1122, 0x33)
-    expect(z.encode).to eq([ 0x22, 0x11, 0x33 ])
+    z = Zigbee::ZDO::ActiveEndpointsRequest.new(0x1122)
+    expect(z.encode).to eq([ 0x22, 0x11])
   end
 end

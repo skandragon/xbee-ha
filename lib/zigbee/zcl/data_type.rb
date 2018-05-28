@@ -267,6 +267,104 @@ module Zigbee
         configure 0x2f, 8
       end
 
+      class Enum8 < DataType
+        attr_reader :value
+
+        TYPE = 0x30
+
+        def initialize(value)
+          @value = value
+        end
+
+        def self.decode_data(bytes)
+          @value = bytes.shift
+        end
+
+        def encode_data
+          [ @value & 0xff ]
+        end
+
+        def valid?
+          @value != 0xff
+        end
+
+        def length
+          1
+        end
+      end
+
+      class CharacterString < DataType
+        attr_reader :value
+
+        TYPE = 0x42
+
+        def initialize(value)
+          @value = value
+        end
+
+        def self.decode_data(bytes)
+          length = bytes.shift
+          if length == 0xff
+            new(nil)
+          else
+            val = length.times.map { bytes.shift }
+            new(val.pack('C*'))
+          end
+        end
+
+        def encode_data
+          if value
+            ([length] + value.each_byte.map(&:ord)).flatten
+          else
+            [ 0xff ]
+          end
+        end
+
+        def valid?
+          value
+        end
+
+        def length
+          value.nil? ? 1 : value.length
+        end
+      end
+
+      class EUI64 < DataType
+        attr_reader :value
+
+        TYPE = 0xf0
+
+        def initialize(value)
+          @value = value
+        end
+
+        def self.decode_data(bytes)
+          ensure_has_bytes(bytes, 8)
+          value = 0
+          8.times do |time|
+            value |= bytes.shift << (8 * time)
+          end
+          new(value)
+        end
+
+        def encode_data
+          val = value
+          8.times.map {
+            ret = val & 0xff
+            val >>= 8
+            ret
+          }
+        end
+
+        def valid?
+          value != 0xffffffffffffffff
+        end
+
+        def length
+          8
+        end
+      end
+
       MAP = {
           0x00 => NoData,
           0x20 => Uint8,
@@ -284,7 +382,10 @@ module Zigbee
           0x2c => Int40,
           0x2d => Int48,
           0x2e => Int56,
-          0x2f => Int64
+          0x2f => Int64,
+          0x30 => Enum8,
+          0x42 => CharacterString,
+          0xf0 => EUI64
       }
 
       MAP_SYMBOL = {
@@ -304,7 +405,10 @@ module Zigbee
           int40: Int40,
           int48: Int48,
           int56: Int56,
-          int64: Int64
+          int64: Int64,
+          enum8: Enum8,
+          character_string: CharacterString,
+          eui64: EUI64
       }
 
     end

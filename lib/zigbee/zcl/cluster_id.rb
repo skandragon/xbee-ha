@@ -1,4 +1,4 @@
-module ClusterIds
+module ClusterIds  # HA cluster IDs
   BASIC = 0x0000
   POWER_CONFIGURATION = 0x0001
   IDENTIFY = 0x0003

@@ -1,4 +1,5 @@
 require_relative '../../utils'
+require_relative './zcl_command'
 
 module Zigbee
   module ZCL

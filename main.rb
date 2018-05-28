@@ -136,49 +136,11 @@ end until frame.is_a?(Xbee::AtCommandResponseFrame)
 puts "My 16-bit address address: #{@myid16}"
 @myid16_bytes_le = [ @myid16.to_i(16) ].pack('S<')
 
-@counter = 0xaa
-
-def find_sensor(frame)
-  @sensors[frame.node64_string] ||= {}
-  @sensors[frame.node64_string]
-end
-
-def send_address_and_enroll(frame)
-  sensor = find_sensor(frame)
-  puts "Sending Write with our address"
-  @counter += 1
-  data = [
-      0x00, @counter, 0x02,
-      0x0010, # attribute
-      0xf0, # type: EUID64
-      @myid64_bytes_le
-  ].pack('CCCS<Ca*')
-  send_explicit(@counter, frame.node64, frame.node16, 0x0500, 0x0104, data, 1, sensor[:endpoint])
-
-  puts ">>> Sending enroll response"
-  @counter += 1
-  data = [
-      0x01, @counter, 0x00,
-      0x00, 0x00
-  ].pack('CCCCC')
-  hexdump data, '>> '
-  sensor[:enroll_response_seq] = @counter
-  send_explicit(@counter, frame.node64, frame.node16, 0x0500, 0x0104, data, 1, sensor[:endpoint])
-end
-
-def send_configure_reporting(frame)
-  sensor = find_sensor(frame)
-  puts "Sending configure reporting"
-  @counter += 1
-  data = [
-      0x00, @counter, 0x06,
-      0x00,
-      0x0010, # what id?
-      0xf0, # hmmm, what attribute type goes here?
-      60,
-      300,
-      1
-  ]
+@counter = 0
+def next_counter
+  @counter = (@counter + 1) & 0xff
+  @counter = 1 if @counter == 0
+  @counter
 end
 
 def read_zcl_header(data)
@@ -186,226 +148,121 @@ def read_zcl_header(data)
   [ flags, seq, cmd, remaining ]
 end
 
+@attrs = [ 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0007 ]
+
+def read_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute)
+  counter = next_counter
+  command = Zigbee::ZCL::ReadAttributes.new([attribute])
+  frame_control = Zigbee::ZCL::FrameControlField.new(Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL, 0x00, 0, 0)
+  header = Zigbee::ZCL::Header.new(frame_control, counter, 0x00)
+  bytes = header.encode + command.encode
+  send_explicit(counter, old_frame.node64, old_frame.node16, cluster, 0x0104, bytes.pack('C*'), src_endpoint, dst_endpoint)
+  counter
+end
+
+def write_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute, data_type, value)
+  counter = next_counter
+  request = Zigbee::ZCL::WriteAttributes::Request.new(attribute, data_type, value)
+
+  command = Zigbee::ZCL::WriteAttributes.new([request])
+  frame_control = Zigbee::ZCL::FrameControlField.new(Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL, 0x00, 0, 0)
+  header = Zigbee::ZCL::Header.new(frame_control, counter, 0x02)
+  bytes = header.encode + command.encode
+  send_explicit(counter, old_frame.node64, old_frame.node16, cluster, 0x0104, bytes.pack('C*'), src_endpoint, dst_endpoint)
+  counter
+end
+
+def zone_enroll_response(old_frame, src_endpoint, dst_endpoint, status, zoneid)
+  counter = next_counter
+  request = [ status, zoneid ]
+
+  frame_control = Zigbee::ZCL::FrameControlField.new(Zigbee::ZCL::FrameControlField::FRAME_TYPE_LOCAL, 0x00, 0, 0)
+  header = Zigbee::ZCL::Header.new(frame_control, counter, 0x00)
+  bytes = [header.encode + request].flatten
+  send_explicit(counter, old_frame.node64, old_frame.node16, 0x0500, 0x0104, bytes.pack('C*'), src_endpoint, dst_endpoint)
+  counter
+end
+
 loop do
   frame = receive_and_dump
   handled = false
 
   next unless frame.is_a?(Xbee::ZigbeeExplicitRxIndicatorFrame)
-  if frame.profile_id == 0x0000 && frame.cluster_id == 0x0013
-    puts "Received device announce message from #{frame.node64_string}/#{frame.node16_string}"
-    seq, addr16, addr64, capability = frame.app_data.unpack('CS<Q<C')
-    if capability != 0
-      print " Capabilities: "
-      print " AlternatePanController" if (capability & 0x01) > 0
-      print " FullFunctionDevice" if (capability & 0x02) > 0
-      print " MainsPower" if (capability & 0x04) > 0
-      print " ReceiverOnWhenIdle" if (capability & 0x08) > 0
-      print " HighSecurityMode" if (capability & 0x40) > 0
-      print " AllocateAddress" if (capability & 0x80) > 0
-      puts
-    end
+  if frame.profile_id == 0x0000
+    if frame.cluster_id == 0x0013
+      puts "Received device announce message from #{frame.node64_string}/#{frame.node16_string}"
+      seq, addr16, addr64, capability = frame.app_data.unpack('CS<Q<C')
+      if capability != 0
+        print "  Capabilities: "
+        print "  AlternatePanController" if (capability & 0x01) > 0
+        print "  FullFunctionDevice" if (capability & 0x02) > 0
+        print "  MainsPower" if (capability & 0x04) > 0
+        print "  ReceiverOnWhenIdle" if (capability & 0x08) > 0
+        print "  HighSecurityMode" if (capability & 0x40) > 0
+        print "  AllocateAddress" if (capability & 0x80) > 0
+        puts
+      end
 
-    sensor = find_sensor(frame)
-
-    sent = false
-    if !sent && sensor[:endpoint].nil?
-      puts "Sending Active Endpoint Request"
-      @counter += 1
-      data = [
-          @counter,
-          frame.node16,
-      ].pack('CS<')
-      send_explicit(@counter, frame.node64, frame.node16, 0x0005, 0x0000, data)
-      sent = true
-    end
-
-    if !sent && sensor[:descriptors].nil? && sensor[:endpoint]
-      puts "Sending Simple Descriptor Request"
-      @counter += 1
-      data = [
-          @counter,
-          frame.node16,
-          sensor[:endpoint]
-      ].pack('CS<C')
-      send_explicit(@counter, frame.node64, frame.node16, 0x0004, 0x0000, data)
-      sent = true
-    end
-
-    if !sent && sensor[:enrolled].nil? && sensor[:descriptors] && sensor[:endpoint]
-      send_address_and_enroll(frame)
-      sent = true
-    end
-
-    handled = true
-  end
-
-  if frame.profile_id == 0x0000 && frame.cluster_id == 0x8005
-    sensor = find_sensor(frame)
-    puts "Received Active Endpoint Response"
-    puts "  Endpoint count: "  + frame.app_data[4].ord.to_s # TODO: decode better
-    puts "  Active Endpoint: "  + frame.app_data[5].ord.to_s
-    sensor[:endpoint] = frame.app_data[5].ord
-
-    if sensor[:enrolled].nil? && sensor[:endpoint]
-      send_address_and_enroll(frame)
-      sensor[:enrolled] = true # ignores errors
-      #sent = true
-    end
-    handled = true
-  end
-
-  if frame.profile_id == 0x0000 && frame.cluster_id == 0x8004
-    sensor = find_sensor(frame)
-    puts "Received Simple Descriptor Response"
-    app_data = frame.app_data
-    if frame.app_data.length < 12
-      puts "Error: too few bytes!"
-      return
-    end
-    transaction_id, _, _, _, _, endpoint, profile_id, device_id, device_version, input_cluster_count, app_data = app_data.unpack('CCCCCCS<S<CCa*')
-
-    input_cluster_ids = []
-    input_cluster_count.times do
-      cluster_id, app_data = app_data.unpack("S<a*")
-      input_cluster_ids << cluster_id
-    end
-
-    output_cluster_count, app_data = app_data.unpack("Ca*")
-    output_cluster_ids = []
-    output_cluster_count.times do
-      cluster_id, app_data = app_data.unpack("S<a*")
-      output_cluster_ids << cluster_id
-    end
-
-    sensor[:descriptors] = {
-        transaction_id: transaction_id,
-        endpoint: endpoint,
-        profile: profile_id,
-        device: device_id,
-        device_version: device_version,
-        input_clusters: input_cluster_ids,
-        input_cluster_strings: input_cluster_ids.map { |x| "%04x" % x },
-        output_clusters: output_cluster_ids,
-        output_cluster_strings: output_cluster_ids.map { |x| "%04x" % x },
-    }
-    puts JSON::generate(sensor[:descriptors])
-
-    handled = true
-  end
-
-  if frame.profile_id == 0x0104 && frame.cluster_id == 0x0000
-    flags, zcl_seq, cmd, app_data = read_zcl_header(frame.app_data)
-    attr, app_data = app_data.unpack('S<a*')
-    puts ">> Read request for global attribute 0x#{attr.to_s(16)}"
-    if attr == 0x0000 # ZCL version
-      data = [
-          0x08, zcl_seq, 0x01,
-          attr, 0x00, 0x20, 0x02
-      ].pack('CCCS<CCC')
-      @counter += 1
-      send_explicit(@counter, frame.node64, frame.node16, 0x0000, 0x0104, data, 0, 1) # TODO: use real endpoint here
       handled = true
     end
-    if attr == 0x0001 # App version
-      data = [
-          0x08, zcl_seq, 0x01,
-          attr, 0x00, 0x20, 0x01
-      ].pack('CCCS<CCC')
-      @counter += 1
-      send_explicit(@counter, frame.node64, frame.node16, 0x0000, 0x0104, data, 0, 1) # TODO: use real endpoint here
-      handled = true
-    end
-  end
 
-  if frame.profile_id == 0x0104 && frame.cluster_id == 0x0500
-    flags, zcl_seq, cmd, app_data = read_zcl_header(frame.app_data)
-    # check zcl command
-    if (flags & 0x01) == 0
-      if cmd == 0x04 # write result
-        status = app_data[0].ord
-        puts frame
-        puts " Got write status: 0x#{status.to_s(16)}"
-        handled = true
-      end
-      if cmd == 0x0b # default response
-        command = app_data[0].ord
-        status = app_data[1].ord
-        puts frame
-        puts " Got default response: command 0x#{command.to_s(16)} status 0x#{status.to_s(16)}"
-        handled = true
-      end
-    else # cluster specific
-      if cmd == 0x00 # zone status update
-        status, _, zoneid, delay = app_data[0..5].unpack('S<CCS<')
-        puts " Got zone status update: status=0x#{status.to_s(16)}, zoneid=#{zoneid}, delay=#{delay}"
-        handled = true
+    if frame.cluster_id == 0x0006
+      puts "Received match descriptor request from #{frame.node64_string}/#{frame.node16_string}"
+      bytes = frame.app_data.unpack('C*')
+      seq = bytes.shift
+      match_request = Zigbee::ZDO::MatchDescriptorRequest.decode(bytes)
+
+      puts "  Sequence: 0x%02x" % seq
+      puts "  Profile 0x%04x" % match_request.profile_id
+      puts "  Address: 0x%04x" % match_request.address
+      cluster_string = match_request.input_clusters.map { |x| "%04x" % x }
+      puts "  Input clusters: " + cluster_string.join(", ")
+
+      cluster_string = match_request.output_clusters.map { |x| "%04x" % x }
+      puts "  Output clusters: " + cluster_string.join(", ")
+
+      if match_request.profile_id == 0x0104
+        if match_request.output_clusters.include?(0x0500)
+          reply = Zigbee::ZDO::MatchDescriptorResponse.new(0x00, 0x0000, [ 0x01 ])
+          reply_bytes = [ seq ] + reply.encode
+          send_explicit(next_counter, frame.node64, frame.node16, 0x8006, 0x0000, reply_bytes.pack('C*'))
+
+          next_attr = @attrs.shift
+          if next_attr
+            read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
+          end
+          handled = true
+        end
       end
     end
   end
 
-  if frame.profile_id == 0x0000 && frame.cluster_id == 0x0000
-    cmd = frame.app_data[2].ord
-    if cmd == 0x00
-      id = frame.app_data[3].ord | (frame.app_data[4].ord << 8)
-      if id == 0x0000
-        data = [
-            0x81,
-        ]
+  if frame.profile_id == 0x0104
+    bytes = frame.app_data.unpack('C*')
+    header = Zigbee::ZCL::Header.decode(bytes)
+    pp header
+    if header.command_identifier == 0x01 # read attributes response
+      if frame.cluster_id == 0x0000
+        response = Zigbee::ZCL::ReadAttributesResponse.decode(bytes)
+        pp response
+
+        next_attr = @attrs.shift
+        if next_attr
+          read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
+        else
+          write_attribute(frame, 0x0500, 0x01, 0x01, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+          zone_enroll_response(frame, 0x01, 0x01, 0x00, 0x01)
+        end
+        handled = true
       end
     end
-  end
-
-  if frame.profile_id == 0x0000 && frame.cluster_id == 0x0006
-    seq, addr, profile, incount, remaining = frame.app_data.unpack('CS<S<Ca*')
-    initems = []
-    incount.times do
-      item, remaining = remaining.unpack('S<a*')
-      initems << item
-    end
-    outcount, remaining = remaining.unpack('Ca*')
-    outitems = []
-    outcount.times do
-      item, remaining = remaining.unpack('S<a*')
-      outitems << item
-    end
-    json = {
-        seq: seq, addr: addr, profile: profile, in_items: initems, out_items: outitems
-    }
-    puts frame
-    puts JSON.generate(json)
-    handled = true
-
-    if addr == 0xfffd && profile == 0x0104 && outitems.include?(0x0500)
-      puts "Sending Match Descriptor Response for 0x0500"
-      @counter += 1
-      data = [
-          seq,
-          0,
-          0x0000,
-          1,
-          1
-      ].pack('CCS<CC')
-      send_explicit(@counter, frame.node64, frame.node16, 0x8006, 0x0000, data)
-    end
-
-    if addr == 0xfffd && profile == 0x0104 && initems.include?(0x0019)
-      puts "Sending Match Descriptor Response for 0x0019"
-      @counter += 1
-      data = [
-          seq,
-          0x89,
-          0x0000,
-          0
-      ].pack('CCS<C')
-      send_explicit(@counter, frame.node64, frame.node16, 0x8006, 0x0000, data)
-    end
-
   end
 
   unless handled
     puts
     puts "UNHANDLED MESSAGE: "
     pp frame
+    puts " App data:"
     hexdump frame.app_data
   end
 end

@@ -610,4 +610,59 @@ describe Zigbee::ZCL::DataType do
     end
   end
 
+  describe Zigbee::ZCL::DataType::CharacterString do
+    let (:type) { 0x42 }
+
+    it "decodes" do
+      bytes = [ type, 0x04, 'a'.ord, 'b'.ord, 'c'.ord, 'd'.ord ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(item).to be_a(Zigbee::ZCL::DataType::CharacterString)
+      expect(item.value).to eq('abcd')
+      expect(item.length).to eq(4)
+      expect(item.valid?).to be_truthy
+    end
+
+    it "decodes invalid value" do
+      bytes = [ type, 0xff ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(item).to be_a(Zigbee::ZCL::DataType::CharacterString)
+      expect(item.valid?).to be_falsey
+    end
+
+    it "encodes string" do
+      item = Zigbee::ZCL::DataType::CharacterString.new('abcd').encode
+      expect(item).to eq([type, 0x04, 'a'.ord, 'b'.ord, 'c'.ord, 'd'.ord])
+    end
+
+    it "encodes nil as invalid" do
+      item = Zigbee::ZCL::DataType::CharacterString.new(nil).encode
+      expect(item).to eq([type, 0xff])
+    end
+  end
+
+  describe Zigbee::ZCL::DataType::EUI64 do
+    let (:type) { 0xf0 }
+
+    it "decodes" do
+      bytes = [ type, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(item).to be_a(Zigbee::ZCL::DataType::EUI64)
+      expect(item.length).to eq(8)
+      expect(item.value).to eq(0x8877665544332211)
+      expect(item.valid?).to be_truthy
+    end
+
+    it "decodes invalid" do
+      bytes = [ type, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff ]
+      item = Zigbee::ZCL::DataType.decode(bytes)
+      expect(item).to be_a(Zigbee::ZCL::DataType::EUI64)
+      expect(item.length).to eq(8)
+      expect(item.valid?).to be_falsey
+    end
+
+    it "encodes" do
+      item = Zigbee::ZCL::DataType::EUI64.new(0x1122334455667788).encode
+      expect(item).to eq([type, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11])
+    end
+  end
 end

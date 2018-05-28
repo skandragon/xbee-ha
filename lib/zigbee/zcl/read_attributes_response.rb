@@ -70,10 +70,12 @@ module Zigbee
           if status == 0x00
             ensure_has_bytes(bytes, 1)
             data_type = bytes.shift
-            data_class = Zigbee::ZCL::DataType.class_for(data_type).decode_data(bytes)
+            data_class = Zigbee::ZCL::DataType.class_for(data_type)
+            raise ArgumentError.new("Unknown class for data type 0x%02x" % data_type) unless data_class
+            data = data_class.decode_data(bytes)
             value = nil
-            if data_class.respond_to?(:value)
-              value = data_class.value
+            if data.respond_to?(:value)
+              value = data.value
             end
             new(attribute, status, data_type, value)
           else

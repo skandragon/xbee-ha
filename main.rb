@@ -6,6 +6,7 @@ require './xbee'
 require './lib/api_frame'
 
 require_relative 'lib/zigbee/zcl'
+require_relative 'lib/zigbee/zcl/profiles/home_automation/ias'
 
 @sensors = {}
 @sent_seq = []
@@ -148,9 +149,10 @@ def read_zcl_header(data)
   [ flags, seq, cmd, remaining ]
 end
 
-@attrs = [ 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0007 ]
+@attrs = [ ] # 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0007 ]
 
 def read_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute)
+  puts ">>> ReadAttribute #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x" % [ cluster, attribute]
   counter = next_counter
   command = Zigbee::ZCL::ReadAttributes.new([attribute])
   frame_control = Zigbee::ZCL::FrameControlField.new(Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL, 0x00, 0, 0)
@@ -161,6 +163,7 @@ def read_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute)
 end
 
 def write_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute, data_type, value)
+  puts ">>> WriteAttribute #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x" % [ cluster, attribute]
   counter = next_counter
   request = Zigbee::ZCL::WriteAttributes::Request.new(attribute, data_type, value)
 
@@ -173,6 +176,7 @@ def write_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute, d
 end
 
 def zone_enroll_response(old_frame, src_endpoint, dst_endpoint, status, zoneid)
+  puts ">>> EnrollResponse #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x"
   counter = next_counter
   request = [ status, zoneid ]
 
@@ -230,6 +234,9 @@ loop do
           next_attr = @attrs.shift
           if next_attr
             read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
+          else
+            write_attribute(frame, 0x0500, 0x01, 0x05, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+            zone_enroll_response(frame, 0x01, 0x05, 0x00, 0x01)
           end
           handled = true
         end
@@ -240,21 +247,47 @@ loop do
   if frame.profile_id == 0x0104
     bytes = frame.app_data.unpack('C*')
     header = Zigbee::ZCL::Header.decode(bytes)
-    pp header
-    if header.command_identifier == 0x01 # read attributes response
-      if frame.cluster_id == 0x0000
-        response = Zigbee::ZCL::ReadAttributesResponse.decode(bytes)
-        pp response
+    if header.frame_control.frame_type == Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL
+      if header.command_identifier == 0x01 # read attributes response
+        if frame.cluster_id == 0x0000
+          response = Zigbee::ZCL::ReadAttributesResponse.decode(bytes)
+          pp response
 
-        next_attr = @attrs.shift
-        if next_attr
-          read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
-        else
-          write_attribute(frame, 0x0500, 0x01, 0x01, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-          zone_enroll_response(frame, 0x01, 0x01, 0x00, 0x01)
+          next_attr = @attrs.shift
+          if next_attr
+            read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
+          else
+            write_attribute(frame, 0x0500, 0x01, 0x05, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+            zone_enroll_response(frame, 0x01, 0x05, 0x00, 0x01)
+          end
+          handled = true
         end
+      end
+    else # local command
+      if frame.cluster_id == 0x0500 && header.command_identifier == 0x00
+        update = Zigbee::ZCL::Profiles::HomeAutomation::IAS::ZoneStatusChange.decode(bytes)
+        zone_status_list = []
+        zone_status_list << 'alarm1' if (update.status & 0x0001) != 0
+        zone_status_list << 'alarm2' if (update.status & 0x0002) != 0
+        zone_status_list << 'tampered' if (update.status & 0x0004) != 0
+        zone_status_list << 'battery-low' if (update.status & 0x0008) != 0
+        zone_status_list << 'supervision-reports' if (update.status & 0x0010) != 0
+        zone_status_list << 'restore-reports' if (update.status & 0x0020) != 0
+        zone_status_list << 'trouble' if (update.status & 0x0040) != 0
+        zone_status_list << 'ac-mains-fault' if (update.status & 0x0080) != 0
+        zone_status_list << 'test-mode' if (update.status & 0x0100) != 0
+        zone_status_list << 'battery-defect' if (update.status & 0x0200) != 0
+        puts "ZONE STATUS CHANGE: #{frame.node64_string}/#{frame.node16_string} #{zone_status_list.join(', ')} zone=#{update.zone_id} delay=#{update.delay}"
         handled = true
       end
+    end
+
+    unless handled
+      puts "UNHANDLED message"
+      puts frame
+      puts header
+      hexdump bytes.pack('C*')
+      handled = true
     end
   end
 

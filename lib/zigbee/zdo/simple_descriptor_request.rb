@@ -15,16 +15,16 @@ module Zigbee
 
       def self.decode(bytes)
         ensure_has_bytes(bytes, 3)
-        address = bytes.shift | bytes.shift << 8
-        endpoint = bytes.shift
+        address = decode_uint16(bytes)
+        endpoint = decode_uint8(bytes)
         new(address, endpoint)
       end
 
       def encode
         [
-            address & 0xff, address >> 8,
-            endpoint
-        ]
+            encode_uint16(address),
+            encode_uint8(endpoint)
+        ].flatten
       end
     end
   end

@@ -20,20 +20,20 @@ module Zigbee
 
             def self.decode(bytes)
               ensure_has_bytes(bytes, 6)
-              status = bytes.shift | bytes.shift << 8
-              extended_status = bytes.shift
-              zone_id = bytes.shift
-              delay = bytes.shift | bytes.shift << 8
+              status = decode_uint16(bytes)
+              extended_status = decode_uint8(bytes)
+              zone_id = decode_uint8(bytes)
+              delay = decode_uint16(bytes)
               new(status, zone_id, delay, extended_status)
             end
 
             def encode
               [
-                  status & 0xff, status >> 8,
-                  extended_status,
-                  zone_id,
-                  delay & 0xff, delay >> 8
-              ]
+                  encode_uint16(status),
+                  encode_uint8(extended_status),
+                  encode_uint8(zone_id),
+                  encode_uint16(delay)
+              ].flatten
             end
           end
         end

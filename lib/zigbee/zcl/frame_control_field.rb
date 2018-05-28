@@ -27,7 +27,7 @@ module Zigbee
 
       def self.decode(bytes)
         ensure_has_bytes(bytes, 1)
-        byte = bytes.shift
+        byte = decode_uint8(bytes)
         new(byte & 0x03, ((byte >> 3) & 0x01), ((byte >> 4) & 0x01), ((byte >> 2) & 0x01))
       end
 

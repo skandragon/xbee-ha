@@ -1,5 +1,6 @@
 require_relative './match_descriptor_request'
 require_relative './match_descriptor_response'
+require_relative ''
 
 class ProfileZDO
   CLUSTERS = {

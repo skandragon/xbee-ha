@@ -23,11 +23,11 @@ module Zigbee
         manufacturer_code = nil
         if frame_control.manufacturer_specific == 1
           ensure_has_bytes(bytes, 2)
-          manufacturer_code = extract_uint16(bytes)
+          manufacturer_code = decode_uint16(bytes)
         end
         ensure_has_bytes(bytes, 2)
-        transaction_sequence_number = bytes.shift
-        command_identifier = bytes.shift
+        transaction_sequence_number = decode_uint8(bytes)
+        command_identifier = decode_uint8(bytes)
         new(frame_control, transaction_sequence_number, command_identifier, manufacturer_code)
       end
 

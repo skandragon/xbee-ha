@@ -5,12 +5,32 @@ module ArrayUtils
   end
 
   module InstanceMethods
-    def encode_uint16(value)
-      self.class.encode_uint16(value)
+    def encode_uint8(*values)
+      self.class.encode_uint8(*values)
     end
 
-    def extract_uint16(value)
-      self.class.extract_uint16(value)
+    def decode_uint8(bytes, count = nil)
+      self.class.decode_uint8(bytes, count)
+    end
+
+    def encode_uint16(*values)
+      self.class.encode_uint16(*values)
+    end
+
+    def decode_uint16(bytes, count = nil)
+      self.class.decode_uint16(bytes, count)
+    end
+
+    def encode_uint32(*values)
+      self.class.encode_uint32(*values)
+    end
+
+    def decode_uint32(bytes, count = nil)
+      self.class.decode_uint32(bytes, count)
+    end
+
+    def ensure_has_bytes(array, expected)
+      self.class.ensure_has_bytes(array, expected)
     end
   end
 
@@ -24,12 +44,40 @@ module ArrayUtils
       raise ArgumentError, "Expected #{expected} bytes, but only #{array.length} remain" if array.length < expected
     end
 
-    def encode_uint16(value)
-      [ value & 0xff, (value >> 8) & 0xff ]
+    def encode_uint8(*values)
+      values.map { |value| value & 0xff }
     end
 
-    def extract_uint16(bytes)
-      bytes.shift | bytes.shift << 8
+    def decode_uint8(bytes, count = nil)
+      if count.nil?
+        bytes.shift
+      else
+        count.times.map { bytes.shift }
+      end
+    end
+
+    def encode_uint16(*values)
+      values.map { |value| [ value & 0xff, (value >> 8) & 0xff ] }.flatten
+    end
+
+    def decode_uint16(bytes, count = nil)
+      if count.nil?
+        bytes.shift | bytes.shift << 8
+      else
+        count.times.map { bytes.shift | bytes.shift << 8 }
+      end
+    end
+
+    def encode_uint32(*values)
+      values.map { |value| [ value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff ] }.flatten
+    end
+
+    def decode_uint32(bytes, count = nil)
+      if count.nil?
+        bytes.shift | bytes.shift << 8 | bytes.shift << 16 | bytes.shift << 24
+      else
+        count.times.map { bytes.shift | bytes.shift << 8 | bytes.shift << 16 | bytes.shift << 24 }
+      end
     end
   end
 end

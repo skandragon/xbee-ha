@@ -16,7 +16,7 @@ module Zigbee
       end
 
       def self.decode(bytes)
-        type = bytes.shift
+        type = decode_uint8(bytes)
 
         subclasses = ObjectSpace.each_object(singleton_class).select { |klass| klass < self }
         subclass = subclasses.select { |klass| klass.const_get(:TYPE) == type }.first
@@ -115,7 +115,7 @@ module Zigbee
             ensure_has_bytes(bytes, length)
             value = 0
             length.times do |time|
-              value |= bytes.shift << (8 * time)
+              value |= decode_uint8(bytes) << (8 * time)
             end
             new(value)
           end
@@ -219,7 +219,7 @@ module Zigbee
             ensure_has_bytes(bytes, length)
             value = 0
             length.times do |time|
-              value |= bytes.shift << (8 * time)
+              value |= decode_uint8(bytes) << (8 * time)
             end
             value -= 1 << (length * 8) if value > invalid_value
             new(value)
@@ -277,7 +277,7 @@ module Zigbee
         end
 
         def self.decode_data(bytes)
-          @value = bytes.shift
+          @value = decode_uint8(bytes)
         end
 
         def encode_data
@@ -303,11 +303,11 @@ module Zigbee
         end
 
         def self.decode_data(bytes)
-          length = bytes.shift
+          length = decode_uint8(bytes)
           if length == 0xff
             new(nil)
           else
-            val = length.times.map { bytes.shift }
+            val = length.times.map { decode_uint8(bytes) }
             new(val.pack('C*'))
           end
         end
@@ -342,7 +342,7 @@ module Zigbee
           ensure_has_bytes(bytes, 8)
           value = 0
           8.times do |time|
-            value |= bytes.shift << (8 * time)
+            value |= decode_uint8(bytes) << (8 * time)
           end
           new(value)
         end

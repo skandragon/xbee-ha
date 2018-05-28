@@ -18,22 +18,20 @@ module Zigbee
 
       def encode
         [
-            status,
-            address & 0xff, address >> 8,
-            endpoints.count,
-            endpoints
+            encode_uint8(status),
+            encode_uint16(address),
+            encode_uint8(endpoints.count),
+            encode_uint8(*endpoints)
         ].flatten
       end
 
       def self.decode(bytes)
         ensure_has_bytes(bytes, 4)
-        status = bytes.shift
-        address = bytes.shift | (bytes.shift << 8)
-        n = bytes.shift
-        endpoints = n.times.map {
-          ensure_has_bytes(bytes, 1)
-          bytes.shift
-        }
+        status = decode_uint8(bytes)
+        address = decode_uint16(bytes)
+        n = decode_uint8(bytes)
+        ensure_has_bytes(bytes, n)
+        endpoints = decode_uint8(bytes, n)
         new(status, address, endpoints)
       end
     end

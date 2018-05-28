@@ -15,8 +15,8 @@ module Zigbee
 
       def self.parse(bytes)
         ensure_has_bytes(bytes, 2)
-        command = bytes.shift
-        status = bytes.shift
+        command = decode_uint8(bytes)
+        status = decode_uint8(bytes)
         new(command, status)
       end
 

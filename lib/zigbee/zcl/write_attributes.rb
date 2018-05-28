@@ -61,9 +61,9 @@ module Zigbee
 
         def self.decode(bytes)
           ensure_has_bytes(bytes, 3)
-          attribute = (bytes.shift | bytes.shift << 8)
+          attribute = decode_uint16(bytes)
           ensure_has_bytes(bytes, 1)
-          data_type = bytes.shift
+          data_type = decode_uint8(bytes)
           data_class = Zigbee::ZCL::DataType.class_for(data_type).decode_data(bytes)
           value = nil
           if data_class.respond_to?(:value)

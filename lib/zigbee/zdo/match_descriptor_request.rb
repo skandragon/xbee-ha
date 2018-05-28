@@ -18,33 +18,28 @@ module Zigbee
         @output_clusters = output_clusters
       end
 
-      def encode
-        ret = [
-            address & 0xff, address >> 8,
-            profile_id & 0xff, profile_id >> 8,
-            input_clusters.count,
-            input_clusters.map { |x| [x & 0xff, x >> 8 ]},
-            output_clusters.count,
-            output_clusters.map { |x| [x & 0xff, x >> 8 ]},
-        ].flatten
-      end
-
       def self.decode(bytes)
         ensure_has_bytes(bytes, 5)
-        address = bytes.shift | (bytes.shift << 8)
-        profile_id = bytes.shift | (bytes.shift << 8)
-        n = bytes.shift
-        input_clusters = n.times.map {
-          ensure_has_bytes(bytes, 2)
-          bytes.shift | (bytes.shift << 8)
-        }
+        address = decode_uint16(bytes)
+        profile_id = decode_uint16(bytes)
+        n = decode_uint8(bytes)
+        ensure_has_bytes(bytes, n * 2)
+        input_clusters = decode_uint16(bytes, n)
         ensure_has_bytes(bytes, 1)
-        n = bytes.shift
-        output_clusters = n.times.map {
-          ensure_has_bytes(bytes, 2)
-          bytes.shift | (bytes.shift << 8)
-        }
+        n = decode_uint8(bytes)
+        ensure_has_bytes(bytes, n * 2)
+        output_clusters = decode_uint16(bytes, n)
         new(address, profile_id, input_clusters, output_clusters)
+      end
+
+      def encode
+        ret = [
+            encode_uint16(address, profile_id),
+            encode_uint8(input_clusters.count),
+            encode_uint16(*input_clusters),
+            encode_uint8(output_clusters.count),
+            encode_uint16(*output_clusters)
+        ].flatten
       end
     end
   end

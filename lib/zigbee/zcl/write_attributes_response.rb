@@ -57,8 +57,8 @@ module Zigbee
 
         def self.decode(bytes)
           ensure_has_bytes(bytes, 3)
-          status = bytes.shift
-          attribute = (bytes.shift | bytes.shift << 8)
+          status = decode_uint8(bytes)
+          attribute = decode_uint16(bytes)
           new(attribute, status)
         end
       end

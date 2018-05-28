@@ -16,7 +16,7 @@ module Zigbee
         attribute_ids = []
         while bytes.length > 0
           ensure_has_bytes(bytes, 2)
-          attribute_ids << extract_uint16(bytes)
+          attribute_ids << decode_uint16(bytes)
         end
         new(attribute_ids)
       end

@@ -14,12 +14,12 @@ module Zigbee
 
       def self.decode(bytes)
         ensure_has_bytes(bytes, 2)
-        address = bytes.shift | bytes.shift << 8
+        address = decode_uint16(bytes)
         new(address)
       end
 
       def encode
-        [ address & 0xff, address >> 8 ]
+        encode_uint16(address)
       end
     end
   end

@@ -22,25 +22,25 @@ module Zigbee
 
       def self.decode(bytes)
         ensure_has_bytes(bytes, 4)
-        status = bytes.shift
-        address = bytes.shift | bytes.shift << 8
-        length = bytes.shift
+        status = decode_uint8(bytes)
+        address = decode_uint16(bytes)
+        length = decode_uint8(bytes)
         ensure_has_bytes(bytes, length)
 
-        dbytes = length.times.map { bytes.shift }
+        dbytes = decode_uint8(bytes, length)
         ensure_has_bytes(dbytes, 7)
-        endpoint = dbytes.shift
-        profile = dbytes.shift | dbytes.shift << 8
-        device_id = dbytes.shift | dbytes.shift << 8
-        device_version = dbytes.shift & 0x0f
+        endpoint = decode_uint8(dbytes)
+        profile = decode_uint16(dbytes)
+        device_id = decode_uint16(dbytes)
+        device_version = decode_uint8(dbytes) & 0x0f
 
-        count = dbytes.shift
+        count = decode_uint8(dbytes)
         ensure_has_bytes(dbytes, count * 2)
-        input_clusters = count.times.map { dbytes.shift | dbytes.shift << 8 }
+        input_clusters = decode_uint16(dbytes, count)
         ensure_has_bytes(dbytes, 1)
-        count = dbytes.shift
+        count = decode_uint8(dbytes)
         ensure_has_bytes(dbytes, count * 2)
-        output_clusters = count.times.map { dbytes.shift | dbytes.shift << 8 }
+        output_clusters = decode_uint16(dbytes, count)
         # if any bytes remain, ignore them.  I think this is for future expansion.
 
         new(status, address, endpoint, profile, device_id, device_version, input_clusters, output_clusters)
@@ -48,21 +48,21 @@ module Zigbee
 
       def encode
         dbytes = [
-            endpoint,
-            profile & 0xff, profile >> 8,
-            device_id & 0xff, device_id >> 8,
-            device_version & 0x0f,
-            input_clusters.count,
-            input_clusters.map { |c| [ c & 0xff, c >> 8 ] },
-            output_clusters.count,
-            output_clusters.map { |c| [ c & 0xff, c >> 8 ] }
-        ]
+            encode_uint8(endpoint),
+            encode_uint16(profile),
+            encode_uint16(device_id),
+            encode_uint8(device_version & 0x0f),
+            encode_uint8(input_clusters.count),
+            encode_uint16(*input_clusters),
+            encode_uint8(output_clusters.count),
+            encode_uint16(*output_clusters)
+        ].flatten
 
         [
-            status,
-            address & 0xff, address >> 8,
-            dbytes.length,
-            dbytes
+            encode_uint8(status),
+            encode_uint16(address),
+            encode_uint8(dbytes.length),
+            encode_uint8(*dbytes)
         ].flatten
       end
     end

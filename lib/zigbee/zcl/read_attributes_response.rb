@@ -50,11 +50,11 @@ module Zigbee
 
         def self.decode(bytes)
           ensure_has_bytes(bytes, 3)
-          attribute = (bytes.shift | bytes.shift << 8)
-          status = bytes.shift
+          attribute = decode_uint16(bytes)
+          status = decode_uint8(bytes)
           if status == 0x00
             ensure_has_bytes(bytes, 1)
-            data_type = bytes.shift
+            data_type = decode_uint8(bytes)
             data_class = Zigbee::ZCL::DataType.class_for(data_type)
             raise ArgumentError.new("Unknown class for data type 0x%02x" % data_type) unless data_class
             data = data_class.decode_data(bytes)

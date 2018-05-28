@@ -152,7 +152,7 @@ end
 @attrs = [ ] # 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0007 ]
 
 def read_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute)
-  puts ">>> ReadAttribute #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x" % [ cluster, attribute]
+  puts ">>> ReadAttributee #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x" % [ cluster, attribute ]
   counter = next_counter
   command = Zigbee::ZCL::ReadAttributes.new([attribute])
   frame_control = Zigbee::ZCL::FrameControlField.new(Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL, 0x00, 0, 0)
@@ -163,7 +163,7 @@ def read_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute)
 end
 
 def write_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute, data_type, value)
-  puts ">>> WriteAttribute #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x" % [ cluster, attribute]
+  puts ">>> WriteAttribute #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x" % [ cluster, attribute ]
   counter = next_counter
   request = Zigbee::ZCL::WriteAttributes::Request.new(attribute, data_type, value)
 
@@ -176,7 +176,7 @@ def write_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute, d
 end
 
 def zone_enroll_response(old_frame, src_endpoint, dst_endpoint, status, zoneid)
-  puts ">>> EnrollResponse #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x"
+  puts ">>> EnrollResponse #{old_frame.node64_string}/#{old_frame.node16_string}"
   counter = next_counter
   request = [ status, zoneid ]
 
@@ -186,6 +186,19 @@ def zone_enroll_response(old_frame, src_endpoint, dst_endpoint, status, zoneid)
   send_explicit(counter, old_frame.node64, old_frame.node16, 0x0500, 0x0104, bytes.pack('C*'), src_endpoint, dst_endpoint)
   counter
 end
+
+def default_response(old_frame, seq, type, cluster, profile, src_endpoint, dst_endpoint, command, status)
+  puts ">>> DefaultResponse #{old_frame.node64_string}/#{old_frame.node16_string} command 0x%02x status 0x%02" % [ command, status ]
+  counter = next_counter
+  request = [ command, status ]
+
+  frame_control = Zigbee::ZCL::FrameControlField.new(type, 0x01, 0, 0)
+  header = Zigbee::ZCL::Header.new(frame_control, seq, 0x0b)
+  bytes = [header.encode + request].flatten
+  send_explicit(counter, old_frame.node64, old_frame.node16, cluster, profile, bytes.pack('C*'), src_endpoint, dst_endpoint)
+  counter
+end
+
 
 loop do
   frame = receive_and_dump
@@ -265,6 +278,12 @@ loop do
       end
     else # local command
       if frame.cluster_id == 0x0500 && header.command_identifier == 0x00
+        if header.frame_control.disable_default_response
+          puts " [ not sending default response ]"
+        else
+          default_response(frame, header.transaction_sequence_number, Zigbee::ZCL::FrameControlField::FRAME_TYPE_LOCAL,
+                           0x0500, 0x0104, frame.destination_endpoint, frame.source_endpoint, header.command_identifier, 0)
+        end
         update = Zigbee::ZCL::Profiles::HomeAutomation::IAS::ZoneStatusChange.decode(bytes)
         zone_status_list = []
         zone_status_list << 'alarm1' if (update.status & 0x0001) != 0

@@ -1,9 +1,9 @@
 require_relative '../../utils'
-require_relative './zcl_command'
+require_relative './zdo_command'
 
 module Zigbee
-  module ZCL
-    class MatchDescriptorResponse < ZCLCommand
+  module ZDO
+    class MatchDescriptorResponse < ZDOCommand
       include ArrayUtils
 
       attr_reader :status

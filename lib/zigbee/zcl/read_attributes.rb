@@ -24,21 +24,6 @@ module Zigbee
       def encode
         attribute_ids.map { |id| encode_uint16(id) }.flatten
       end
-
-      class Builder
-        def initialize
-          @attribute_ids = []
-        end
-
-        def attribute_ids(value)
-          @attribute_ids = value
-          self
-        end
-
-        def build
-          ReadAttributes.new(@attribute_ids)
-        end
-      end
     end
   end
 end

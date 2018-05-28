@@ -82,17 +82,3 @@ describe Zigbee::ZCL::ReadAttributesResponse do
     expect(z.encode).to eq([ 0x34, 0x12, 0x00, 0x00, 0x45, 0x23, 0x01, 0x88, 0x99, 0x00, 0x23, 0x44, 0x33, 0x22, 0x11 ])
   end
 end
-
-describe Zigbee::ZCL::ReadAttributesResponse::Builder do
-  it "builds" do
-    builder = Zigbee::ZCL::ReadAttributesResponse::Builder.new
-    z = builder.responses(0x1234).build
-    expect(z.responses).to eq([0x1234])
-  end
-
-  it "builds without specifying any ids" do
-    builder = Zigbee::ZCL::ReadAttributesResponse::Builder.new
-    z = builder.build
-    expect(z.responses).to eq([])
-  end
-end

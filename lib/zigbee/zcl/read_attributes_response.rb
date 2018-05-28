@@ -25,21 +25,6 @@ module Zigbee
         responses.map { |response| response.encode }.flatten
       end
 
-      class Builder
-        def initialize
-          @responses = []
-        end
-
-        def responses(list)
-          @responses = list
-          self
-        end
-
-        def build
-          ReadAttributesResponse.new(@responses)
-        end
-      end
-
       class Response
         include ArrayUtils
 

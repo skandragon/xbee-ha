@@ -4,55 +4,64 @@ require 'spec_helper'
 require 'zigbee/zcl/constants'
 require 'zigbee/zcl/configure_cluster_reporting'
 
+describe Zigbee::ZCL::ConfigureClusterReporting::Record do
+  it "decodes direction 0" do
+    bytes = [ 0x00, 0x12, 0x34, 0x21, 0x11, 0x22, 0x33, 0x44, 0x23, 0x01]
+    z = Zigbee::ZCL::ConfigureClusterReporting::Record.decode(bytes)
+
+    expect(z.direction).to eq(0x00)
+    expect(z.attribute).to eq(0x3412)
+    expect(z.data_type).to eq(0x21)
+    expect(z.minimum).to eq(0x2211)
+    expect(z.maximum).to eq(0x4433)
+    expect(z.reportable_change).to eq(0x0123)
+    expect(z.timeout).to be_nil
+    expect(bytes.length).to eq(0)
+  end
+
+  it "encodes direction 1" do
+    bytes = [ 0x01, 0x12, 0x34, 0x21, 0x11]
+    z = Zigbee::ZCL::ConfigureClusterReporting::Record.decode(bytes)
+
+    expect(z.direction).to eq(0x01)
+    expect(z.attribute).to eq(0x3412)
+    expect(z.data_type).to be_nil
+    expect(z.minimum).to be_nil
+    expect(z.maximum).to be_nil
+    expect(z.reportable_change).to be_nil
+    expect(z.timeout).to eq(0x1121)
+    expect(bytes.length).to eq(0)
+  end
+
+  it "encodes direction 0" do
+    z = Zigbee::ZCL::ConfigureClusterReporting::Record.new(0x00, 0x1234, 0x23, 0x1122, 0x3344, 0x99887766, nil)
+    expect(z.encode).to eq([0x00, 0x34, 0x12, 0x23, 0x22, 0x11, 0x44, 0x33, 0x66, 0x77, 0x88, 0x99])
+  end
+
+  it "encodes direction 1" do
+    z = Zigbee::ZCL::ConfigureClusterReporting::Record.new(0x01, 0x1234, nil, nil, nil, nil, 0x9988)
+    expect(z.encode).to eq([0x01, 0x34, 0x12, 0x88, 0x99])
+  end
+end
+
 describe Zigbee::ZCL::ConfigureClusterReporting do
-#  it "decodes list of attributes" do
-#    bytes = [ 0x02, 0x01, 0x00, 0x00 ]
-#    z = Zigbee::ZCL::ConfigureClusterReporting.decode(bytes)
-#    expect(bytes.length).to eq(0)
-#    expect(z.responses.length).to eq(1)
-#    expect(z.responses.first.id).to eq(0x0102)
-#    expect(z.responses.first.status).to eq(0x00)
-#    expect(z.responses.first.data_type).to eq(0x00)
-#  end
-#
-#  it "decodes list of attributes with data types that have values" do
-#    bytes = [ 0x88, 0x99, 0x00, 0x23, 0x44, 0x33, 0x22, 0x11 ]
-#    z = Zigbee::ZCL::ConfigureClusterReporting.decode(bytes)
-#    expect(bytes.length).to eq(0)
-#    expect(z.responses.length).to eq(1)
-#    expect(z.responses.first.id).to eq(0x9988)
-#    expect(z.responses.first.status).to eq(0x00)
-#    expect(z.responses.first.data_type).to eq(0x23)
-#    expect(z.responses.first.value).to eq(0x11223344)
-#  end
-#
-#  it "throws if an odd number of bytes remain" do
-#    values = [ 0x01, 0x02, 0x03, 0x04, 0x05 ]
-#    expect {
-#      Zigbee::ZCL::ConfigureClusterReporting.decode(values)
-#    }.to raise_error(ArgumentError)
-#  end
-#
-#  it "encodes empty list" do
-#    z = Zigbee::ZCL::ConfigureClusterReporting.new([])
-#    expect(z.encode).to eq([])
-#  end
-#
-#  it "encodes single" do
-#    responses = [
-#        Zigbee::ZCL::ConfigureClusterReporting::Response.new(0x1234, 0x00, 0x00, nil)
-#    ]
-#    z = Zigbee::ZCL::ConfigureClusterReporting.new(responses)
-#    expect(z.encode).to eq([ 0x34, 0x12, 0x00, 0x00])
-#  end
-#
-#  it "encodes list" do
-#    responses = [
-#        Zigbee::ZCL::ConfigureClusterReporting::Response.new(0x1234, 0x00, 0x00, nil),
-#        Zigbee::ZCL::ConfigureClusterReporting::Response.new(0x2345, 0x01, nil, nil),
-#        Zigbee::ZCL::ConfigureClusterReporting::Response.new(0x9988, 0x00, 0x23, 0x11223344)
-#    ]
-#    z = Zigbee::ZCL::ConfigureClusterReporting.new(responses)
-#    expect(z.encode).to eq([ 0x34, 0x12, 0x00, 0x00, 0x45, 0x23, 0x01, 0x88, 0x99, 0x00, 0x23, 0x44, 0x33, 0x22, 0x11 ])
-#  end
+  it "decodes two records" do
+    records = [
+        Zigbee::ZCL::ConfigureClusterReporting::Record.new(0x01, 0x1234, nil, nil, nil, nil, 0x9988).encode,
+        Zigbee::ZCL::ConfigureClusterReporting::Record.new(0x01, 0x4321, nil, nil, nil, nil, 0x5544).encode
+    ].flatten
+    z = Zigbee::ZCL::ConfigureClusterReporting.decode(records)
+    expect(z.records.count).to be(2)
+    expect(records).to be_empty
+  end
+
+  it "encodes two records" do
+    r1 = Zigbee::ZCL::ConfigureClusterReporting::Record.new(0x01, 0x1234, nil, nil, nil, nil, 0x9988)
+    r2 = Zigbee::ZCL::ConfigureClusterReporting::Record.new(0x01, 0x4321, nil, nil, nil, nil, 0x5544)
+    expected = [ r1.encode, r2.encode ].flatten
+
+    z = Zigbee::ZCL::ConfigureClusterReporting.new([ r1, r2 ])
+    expect(z.encode).to eq(expected)
+  end
+
 end

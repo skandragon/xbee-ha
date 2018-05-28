@@ -22,7 +22,7 @@ module Zigbee
       end
 
       def encode
-        attribute_ids.map { |id| encode_uint16(id) }.flatten
+        encode_uint16(*attribute_ids)
       end
     end
   end

@@ -19,4 +19,3 @@ describe Zigbee::ZCL::Profiles::HomeAutomation::IAS::ZoneStatusChange do
     expect(bytes).to eq([0x22, 0x11, 0x00, 0x33, 0x55, 0x44])
   end
 end
-

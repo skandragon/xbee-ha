@@ -58,10 +58,6 @@ module Zigbee
         end
       end
 
-      #
-      # Unsigned Integers
-      #
-
       module UnsignedInt
         def self.included(base)
           base.send :include, InstanceMethods
@@ -121,6 +117,54 @@ module Zigbee
           end
         end
       end
+
+      #
+      # MAPs
+      #
+
+      class Map8 < DataType
+        include UnsignedInt
+        configure 0x18, 1
+      end
+
+      class Map16 < DataType
+        include UnsignedInt
+        configure 0x19, 2
+      end
+
+      class Map24 < DataType
+        include UnsignedInt
+        configure 0x1a, 3
+      end
+
+      class Map32 < DataType
+        include UnsignedInt
+        configure 0x1b, 4
+      end
+
+      class Map40 < DataType
+        include UnsignedInt
+        configure 0x1c, 5
+      end
+
+      class Map48 < DataType
+        include UnsignedInt
+        configure 0x1d, 6
+      end
+
+      class Map56 < DataType
+        include UnsignedInt
+        configure 0x1e, 7
+      end
+
+      class Map64 < DataType
+        include UnsignedInt
+        configure 0x1f, 8
+      end
+
+      #
+      # Unsigned Integers
+      #
 
       class Uint8 < DataType
         include UnsignedInt
@@ -367,6 +411,14 @@ module Zigbee
 
       MAP = {
           0x00 => NoData,
+          0x18 => Map8,
+          0x19 => Map16,
+          0x1a => Map24,
+          0x1b => Map32,
+          0x1c => Map40,
+          0x1d => Map48,
+          0x1e => Map56,
+          0x1f => Map64,
           0x20 => Uint8,
           0x21 => Uint16,
           0x22 => Uint24,
@@ -390,6 +442,14 @@ module Zigbee
 
       MAP_SYMBOL = {
           nodata: NoData,
+          map8: Map8,
+          map16: Map16,
+          map24: Map24,
+          map32: Map32,
+          map40: Map40,
+          map48: Map48,
+          map56: Map56,
+          map64: Map64,
           uint8: Uint8,
           uint16: Uint16,
           uint24: Uint24,

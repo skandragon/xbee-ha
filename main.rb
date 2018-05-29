@@ -5,14 +5,17 @@ require 'pp'
 require './xbee'
 require './lib/api_frame'
 
-require_relative 'lib/zigbee/zcl'
-require_relative 'lib/zigbee/zcl/profiles/home_automation/ias'
+require './lib/zigbee/zcl'
+require './lib/zigbee/zcl/profiles/home_automation/ias'
+require './lib/zigbee/zdo/profile_zdo'
 
 @sensors = {}
 @sent_seq = []
 
+ENDPOINT = 0x01
+
 def portname
-  '/dev/tty.usbserial-AD01SUG4'
+  '/dev/tty.usbserial-DA01MFIZ'
 end
 
 def hexdump(data, msg = nil)
@@ -199,6 +202,37 @@ def default_response(old_frame, seq, type, cluster, profile, src_endpoint, dst_e
   counter
 end
 
+def configure_reporting(old_frame, cluster, profile, src_endpoint, dst_endpoint, attribute, data_type, minimum, maximum, reportable_change)
+  puts ">>> ConfigureReporting #{old_frame.node64_string}/#{old_frame.node16_string}"
+  counter = next_counter
+  request = Zigbee::ZCL::ConfigureClusterReporting.new([
+      Zigbee::ZCL::ConfigureClusterReporting::Record.new(0x00, attribute, data_type, minimum, maximum, reportable_change, nil)
+  ])
+
+  frame_control = Zigbee::ZCL::FrameControlField.new(Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL, 0x00, 0, 0)
+  header = Zigbee::ZCL::Header.new(frame_control, counter, 0x06)
+  bytes = [header.encode + request.encode].flatten
+  send_explicit(counter, old_frame.node64, old_frame.node16, cluster, profile, bytes.pack('C*'), src_endpoint, dst_endpoint)
+  counter
+end
+
+def active_endpoints_request(old_frame)
+  puts ">>> ActiveEndpointsRequest #{old_frame.node64_string}/#{old_frame.node16_string}"
+  counter = next_counter
+  request = Zigbee::ZDO::ActiveEndpointsRequest.new(old_frame.node16)
+  bytes = [counter] + request.encode
+  send_explicit(counter, old_frame.node64, old_frame.node16, 0x0005, 0, bytes.pack('C*'), 0, 0)
+  counter
+end
+
+def simple_descriptor_request(old_frame, endpoint)
+  puts ">>> SimpleDescriptorRequest #{old_frame.node64_string}/#{old_frame.node16_string}"
+  counter = next_counter
+  request = Zigbee::ZDO::SimpleDescriptorRequest.new(old_frame.node16, endpoint)
+  bytes = [counter] + request.encode
+  send_explicit(counter, old_frame.node64, old_frame.node16, 0x0004, 0, bytes.pack('C*'), 0, 0)
+  counter
+end
 
 loop do
   frame = receive_and_dump
@@ -248,13 +282,31 @@ loop do
           if next_attr
             read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
           else
-            write_attribute(frame, 0x0500, 0x01, 0x05, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-            zone_enroll_response(frame, 0x01, 0x05, 0x00, 0x01)
+            write_attribute(frame, 0x0500, 0x01, ENDPOINT, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+            zone_enroll_response(frame, 0x01, ENDPOINT, 0x00, 0x01)
           end
           handled = true
         end
       end
     end
+
+    if frame.cluster_id == 0x08005
+      bytes = frame.app_data.unpack('C*')
+      seq = bytes.shift
+      response = Zigbee::ZDO::ActiveEndpointsResponse.decode(bytes)
+      puts "GOT ACTIVE ENDPOINTS REPSONSE: #{response.endpoints}"
+      handled = true
+    end
+
+    if frame.cluster_id == 0x08004
+      bytes = frame.app_data.unpack('C*')
+      seq = bytes.shift
+      response = Zigbee::ZDO::SimpleDescriptorResponse.decode(bytes)
+      puts "Got SimpleDescritorResponse:"
+      pp response
+      handled = true
+    end
+
   end
 
   if frame.profile_id == 0x0104
@@ -270,8 +322,8 @@ loop do
           if next_attr
             read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
           else
-            write_attribute(frame, 0x0500, 0x01, 0x05, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-            zone_enroll_response(frame, 0x01, 0x05, 0x00, 0x01)
+            write_attribute(frame, 0x0500, 0x01, ENDPOINT, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+            zone_enroll_response(frame, 0x01, ENDPOINT, 0x00, 0x01)
           end
           handled = true
         end
@@ -298,13 +350,17 @@ loop do
         zone_status_list << 'battery-defect' if (update.status & 0x0200) != 0
         puts "ZONE STATUS CHANGE: #{frame.node64_string}/#{frame.node16_string} #{zone_status_list.join(', ')} zone=#{update.zone_id} delay=#{update.delay}"
         handled = true
+
+#        active_endpoints_request(frame)
+#        simple_descriptor_request(frame, ENDPOINT)
+        configure_reporting(frame, 0x0001, 0x0104, 0x01, ENDPOINT, 0x0020, 0x20, 3600, 7200, 1)
       end
     end
 
     unless handled
       puts "UNHANDLED message"
       puts frame
-      puts header
+      pp header
       hexdump bytes.pack('C*')
       handled = true
     end
@@ -313,7 +369,7 @@ loop do
   unless handled
     puts
     puts "UNHANDLED MESSAGE: "
-    pp frame
+    puts frame
     puts " App data:"
     hexdump frame.app_data
   end

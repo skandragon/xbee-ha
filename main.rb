@@ -1,5 +1,8 @@
 require 'serialport'
 require 'json'
+require 'mongo'
+require 'time'
+
 require 'pp'
 
 require './xbee'
@@ -9,14 +12,20 @@ require './lib/zigbee/zcl'
 require './lib/zigbee/zcl/profiles/home_automation/ias'
 require './lib/zigbee/zdo/profile_zdo'
 
-@sensors = {}
+PORTNAME = '/dev/tty.usbserial-DA01MFIZ'
+
+Mongo::Logger.logger.level = Logger::FATAL
+@db = Mongo::Client.new('mongodb://localhost/zigbee')
+@log = @db[:log]
+@zonestatus = @db[:zonestatus]
+@logcounter = 0
+
 @sent_seq = []
 
-ENDPOINT = 0x01
+@sp = SerialPort.new(PORTNAME, 115200, 8, 1, SerialPort::NONE)
+@xbee = Xbee.new(@sp)
 
-def portname
-  '/dev/tty.usbserial-DA01MFIZ'
-end
+ENDPOINT = 0x01
 
 def hexdump(data, msg = nil)
   i = 0
@@ -30,7 +39,9 @@ end
 
 def send_explicit(counter, node64, node16, cluster_id, profile_id, data,
                   src_endpoint = 0, dst_endpoint = 0,
-                  broadcast_radius = 0, options = 0)
+                  broadcast_radius = 0, options = 0, &block)
+  data = data.pack('C*') if data.is_a?Array
+
   header = [
       0x11,
       counter,
@@ -44,9 +55,27 @@ def send_explicit(counter, node64, node16, cluster_id, profile_id, data,
       options
   ].pack('CCQ>S>CCS>S>CC')
   @xbee.send_api_frame(header + data)
-  @sent_seq[counter] = header + data
+  @sent_seq[counter] = { frame: header + data, block: block }
   puts "Sending seq #{counter}"
   hexdump header + data
+
+  @logcounter += 1
+  json = {
+      ts: Time.now,
+      direction: 'tx',
+      logseq: @logcounter,
+      frame: {
+          counter: counter,
+          node64: '%016x' % node64,
+          node16: '%04x' % node16,
+          cluster_id: cluster_id,
+          profile_id: profile_id,
+          src_endpoint: src_endpoint,
+          dst_endpoint: dst_endpoint,
+          app_data: data.unpack('H*').first
+      }
+  }
+  @log.insert_one(json)
 end
 
 def send_at_command(counter, command)
@@ -60,17 +89,27 @@ end
 def ack(seq)
   if @sent_seq[seq]
     puts ">>> Got ack for write #{seq}"
+    params = @sent_seq[seq]
     @sent_seq[seq] = nil
+    if params[:block]
+        params[:block].call(:sent)
+    end
   else
     puts ">>> Got ack for write #{seq} but not sure what it was for..."
   end
-  @sensors.values.each { |sensor|
-    if sensor[:enroll_response_seq] == seq
-      sensor[:enrolled] = true
-      sensor.delete(:enroll_response_seq)
-      puts ">>> Got reply to enroll request"
+end
+
+def nak(seq)
+  if @sent_seq[seq]
+    puts ">>> Got failed write for #{seq}"
+    params = @sent_seq[seq]
+    @sent_seq[seq] = nil
+    if params[:block]
+      params[:block].call(:send_failure)
     end
-  }
+  else
+    puts ">>> Got ack for write #{seq} but not sure what it was for..."
+  end
 end
 
 def receive_and_dump
@@ -83,13 +122,20 @@ def receive_and_dump
     if status == 0
       ack(frame.frame.seq)
     else
-      puts ">>> TRANSMIT STATUS: 0x#{frame.frame.delivery_status.to_s(16)} sequence 0x#{frame.frame.seq.to_s(16)}"
-      if @sent_seq[frame.frame.seq]
-        puts ">>> Failed to send this data:"
-        hexdump @sent_seq[frame.frame.seq]
-        @sent_seq[frame.frame.seq] = nil
-      end
+      nak(frame.frame.seq)
     end
+
+    @logcounter += 1
+    json = {
+        ts: Time.now,
+        direction: 'txstatus',
+        logseq: @logcounter,
+        frame: {
+            counter: frame.frame.seq,
+            status: frame.frame.delivery_status
+        }
+    }
+    @log.insert_one(json)
   else
     if frame.is_a?(Xbee::ZigbeeExplicitRxIndicatorFrame)
       puts
@@ -101,15 +147,48 @@ def receive_and_dump
   frame.frame
 end
 
+def log_rx(frame)
+  @logcounter += 1
+  json = {
+      ts: Time.now,
+      direction: 'rx',
+      logseq: @logcounter,
+      frame: {
+          node64: frame.node64_string,
+          node16: frame.node16_string,
+          cluster_id: frame.cluster_id,
+          profile_id: frame.profile_id,
+          src_endpoint: frame.source_endpoint,
+          dst_endpoint: frame.destination_endpoint,
+          app_data: frame.app_data.unpack('H*').first
+      }
+  }
+  @log.insert_one(json)
+end
+
+def log_zone_status(node64, endpoint, delay, status, alarm_strings)
+  alarm_strings = Array(alarm_strings)
+  @logcounter += 1
+  json = {
+      ts: Time.now,
+      logseq: @logcounter,
+      status: {
+          node64: node64,
+          endpoint: endpoint,
+          status: status,
+          delay: delay,
+          strings: alarm_strings
+      }
+  }
+  @zonestatus.insert_one(json)
+end
+
 def receive
   apiframe = @xbee.read_api_frame
   frame = Xbee::APIFrame.new
   frame.decode(apiframe.data)
   frame.frame
 end
-
-@sp = SerialPort.new(portname, 115200, 8, 1, SerialPort::NONE)
-@xbee = Xbee.new(@sp)
 
 sleep 1
 @counter = 1
@@ -234,25 +313,46 @@ def simple_descriptor_request(old_frame, endpoint)
   counter
 end
 
-loop do
-  frame = receive_and_dump
+def query_node_descriptor(node64, node16, &block)
+  puts ">>> GetNodeDescriptor #{old_frame.node64_string}/#{old_frame.node16_string} => %04x" % [ addr16 ]
+  counter = next_counter
+  request = Zigbee::ZDO::NodeDescriptorRequest.new(addr16)
+  bytes = [counter] + request.encode
+  send_explicit(counter, node64, node16, 0x0002, 0, bytes) { |status, response|
+    block.call(status, response)
+  }
+  counter
+end
+
+def process_frame(frame)
   handled = false
 
-  next unless frame.is_a?(Xbee::ZigbeeExplicitRxIndicatorFrame)
   if frame.profile_id == 0x0000
     if frame.cluster_id == 0x0013
       puts "Received device announce message from #{frame.node64_string}/#{frame.node16_string}"
       seq, addr16, addr64, capability = frame.app_data.unpack('CS<Q<C')
-      if capability != 0
-        print "  Capabilities: "
-        print "  AlternatePanController" if (capability & 0x01) > 0
-        print "  FullFunctionDevice" if (capability & 0x02) > 0
-        print "  MainsPower" if (capability & 0x04) > 0
-        print "  ReceiverOnWhenIdle" if (capability & 0x08) > 0
-        print "  HighSecurityMode" if (capability & 0x40) > 0
-        print "  AllocateAddress" if (capability & 0x80) > 0
-        puts
-      end
+      cap_strings = []
+      cap_strings << 'alternate-pan-controller' if (capability & 0x01) > 0
+      cap_strings << 'full-function-device' if (capability & 0x02) > 0
+      cap_strings << 'mains-powered' if (capability & 0x04) > 0
+      cap_strings << 'receiver-on-when-idle' if (capability & 0x08) > 0
+      cap_strings << 'high-security-mode' if (capability & 0x40) > 0
+      cap_strings << 'allocate-address' if (capability & 0x80) > 0
+      puts " Capabilities: #{cap_strings.join(', ')}"
+
+#      query_node_descriptor(frame.node64_string, frame.node16) { |status, data|
+#        case status
+#        when :response
+#          puts "Got node descriptor response"
+#          pp data
+#        else
+#          puts "Got status #{status} when querying node descriptor"
+#        end
+#      }
+
+#      if frame.node64_string == '000d6f000b1b6dc2' || frame.node64_string == '8418260000e8eef8'
+#        active_endpoints_request(frame)
+#      end
 
       handled = true
     end
@@ -330,9 +430,7 @@ loop do
       end
     else # local command
       if frame.cluster_id == 0x0500 && header.command_identifier == 0x00
-        if header.frame_control.disable_default_response
-          puts " [ not sending default response ]"
-        else
+        unless header.frame_control.disable_default_response
           default_response(frame, header.transaction_sequence_number, Zigbee::ZCL::FrameControlField::FRAME_TYPE_LOCAL,
                            0x0500, 0x0104, frame.destination_endpoint, frame.source_endpoint, header.command_identifier, 0)
         end
@@ -351,9 +449,11 @@ loop do
         puts "ZONE STATUS CHANGE: #{frame.node64_string}/#{frame.node16_string} #{zone_status_list.join(', ')} zone=#{update.zone_id} delay=#{update.delay}"
         handled = true
 
+        log_zone_status(frame.node64_string, frame.source_endpoint, update.delay, update.status, zone_status_list)
+
 #        active_endpoints_request(frame)
 #        simple_descriptor_request(frame, ENDPOINT)
-        configure_reporting(frame, 0x0001, 0x0104, 0x01, ENDPOINT, 0x0020, 0x20, 3600, 7200, 1)
+#        configure_reporting(frame, 0x0001, 0x0104, 0x01, ENDPOINT, 0x0020, 0x20, 3600, 7200, 1)
       end
     end
 
@@ -373,4 +473,11 @@ loop do
     puts " App data:"
     hexdump frame.app_data
   end
+end
+
+loop do
+  frame = receive_and_dump
+  next unless frame.is_a?(Xbee::ZigbeeExplicitRxIndicatorFrame)
+  log_rx(frame)
+  process_frame(frame)
 end

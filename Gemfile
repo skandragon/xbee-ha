@@ -10,6 +10,8 @@ gem 'rake'
 
 gem 'rspec'
 
+gem 'mongo', '~> 2.4'
+
 gem 'simplecov', require: false, group: :test
 
 group :development do

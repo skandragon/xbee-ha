@@ -3,6 +3,7 @@ require_relative './active_endpoints_response'
 require_relative './management_network_update_notify'
 require_relative './match_descriptor_request'
 require_relative './match_descriptor_response'
+require_relative './node_descriptor_request'
 require_relative './simple_descriptor_request'
 require_relative './simple_descriptor_response'
 
@@ -94,7 +95,7 @@ class ProfileZDO
           },
           0x0013 => {
               id: 0x0013,
-              name: 'Device Annoucement',
+              name: 'Device Announce',
           },
           0x0014 => {
               id: 0x0014,

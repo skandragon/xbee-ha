@@ -110,5 +110,4 @@ describe RetryableManager do
     rm.remove(r)
     expect(rm.entries).to be_empty
   end
-
 end

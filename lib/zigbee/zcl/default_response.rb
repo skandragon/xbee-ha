@@ -13,7 +13,7 @@ module Zigbee
         @status = status
       end
 
-      def self.parse(bytes)
+      def self.decode(bytes)
         ensure_has_bytes(bytes, 2)
         command = decode_uint8(bytes)
         status = decode_uint8(bytes)

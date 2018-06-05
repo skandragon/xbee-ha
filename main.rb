@@ -25,7 +25,16 @@ Mongo::Logger.logger.level = Logger::FATAL
 @sp = SerialPort.new(PORTNAME, 115200, 8, 1, SerialPort::NONE)
 @xbee = Xbee.new(@sp)
 
-ENDPOINT = 0x01
+def endpoint_for(addr)
+  if [
+      '00155f00b44cb7b6',
+      '00155f00b44cdda0'
+  ].include?(addr)
+    0x05
+  else
+    0x01
+  end
+end
 
 def hexdump(data, msg = nil)
   i = 0
@@ -269,6 +278,17 @@ def zone_enroll_response(old_frame, src_endpoint, dst_endpoint, status, zoneid)
   counter
 end
 
+def initiate_normal_mode(old_frame, src_endpoint, dst_endpoint)
+  puts ">>> EnrollResponse #{old_frame.node64_string}/#{old_frame.node16_string}"
+  counter = next_counter
+
+  frame_control = Zigbee::ZCL::FrameControlField.new(Zigbee::ZCL::FrameControlField::FRAME_TYPE_LOCAL, 0x00, 0, 0)
+  header = Zigbee::ZCL::Header.new(frame_control, counter, 0x01)
+  bytes = header.encode
+  send_explicit(counter, old_frame.node64, old_frame.node16, 0x0500, 0x0104, bytes.pack('C*'), src_endpoint, dst_endpoint)
+  counter
+end
+
 def default_response(old_frame, seq, type, cluster, profile, src_endpoint, dst_endpoint, command, status)
   puts ">>> DefaultResponse #{old_frame.node64_string}/#{old_frame.node16_string} command 0x%02x status 0x%02" % [ command, status ]
   counter = next_counter
@@ -380,10 +400,10 @@ def process_frame(frame)
 
           next_attr = @attrs.shift
           if next_attr
-            read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
+            read_attribute(frame, 0x0000, 0x01, endpoint_for(frame.node64_string), next_attr)
           else
-            write_attribute(frame, 0x0500, 0x01, ENDPOINT, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-            zone_enroll_response(frame, 0x01, ENDPOINT, 0x00, 0x01)
+            write_attribute(frame, 0x0500, 0x01, endpoint_for(frame.node64_string), 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+            zone_enroll_response(frame, 0x01, endpoint_for(frame.node64_string), 0x00, 0x01)
           end
           handled = true
         end
@@ -407,6 +427,14 @@ def process_frame(frame)
       handled = true
     end
 
+    if frame.cluster_id == 0x8038
+      bytes = frame.app_data.unpack('C*')
+      seq = bytes.shift
+      response = Zigbee::ZDO::ManagementNetworkUpdateNotify.decode(bytes)
+      puts "Got ManagementNetworkUpdateNotify:"
+      pp response
+      handled = true
+    end
   end
 
   if frame.profile_id == 0x0104
@@ -420,13 +448,23 @@ def process_frame(frame)
 
           next_attr = @attrs.shift
           if next_attr
-            read_attribute(frame, 0x0000, 0x01, 0x01, next_attr)
+            read_attribute(frame, 0x0000, 0x01, endpoint_for(frame.node64_string), next_attr)
           else
-            write_attribute(frame, 0x0500, 0x01, ENDPOINT, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-            zone_enroll_response(frame, 0x01, ENDPOINT, 0x00, 0x01)
+            write_attribute(frame, 0x0500, 0x01, endpoint_for(frame.node64_string), 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+            zone_enroll_response(frame, 0x01, endpoint_for(frame.node64_string), 0x00, 0x01)
           end
           handled = true
         end
+      end
+      if header.command_identifier == 0x0a # report attributes
+        response = Zigbee::ZCL::ReportAttributes.decode(bytes)
+        pp response
+        handled = true
+      end
+      if header.command_identifier == 0x0b # default response
+        reponse = Zigbee::ZCL::DefaultResponse.decode(bytes)
+        pp response
+        handled = true
       end
     else # local command
       if frame.cluster_id == 0x0500 && header.command_identifier == 0x00
@@ -435,6 +473,8 @@ def process_frame(frame)
                            0x0500, 0x0104, frame.destination_endpoint, frame.source_endpoint, header.command_identifier, 0)
         end
         update = Zigbee::ZCL::Profiles::HomeAutomation::IAS::ZoneStatusChange.decode(bytes)
+        pp header
+        pp update
         zone_status_list = []
         zone_status_list << 'alarm1' if (update.status & 0x0001) != 0
         zone_status_list << 'alarm2' if (update.status & 0x0002) != 0
@@ -451,9 +491,16 @@ def process_frame(frame)
 
         log_zone_status(frame.node64_string, frame.source_endpoint, update.delay, update.status, zone_status_list)
 
+        if (zone_status_list.include?'tampered')
+          zone_enroll_response(frame, 0x01, frame.source_endpoint, 0x00, 0x01)
+          write_attribute(frame, 0x0500, 0x01, frame.source_endpoint, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+          initiate_normal_mode(frame, 0x01, frame.source_endpoint)
+        end
+
 #        active_endpoints_request(frame)
-#        simple_descriptor_request(frame, ENDPOINT)
-#        configure_reporting(frame, 0x0001, 0x0104, 0x01, ENDPOINT, 0x0020, 0x20, 3600, 7200, 1)
+#        simple_descriptor_request(frame, endpoint_for(frame.node64_string))
+#        configure_reporting(frame, 0x0001, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0020, 0x20, 30, 3600, 1)
+#        configure_reporting(frame, 0x0402, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0000, 0x29, 30, 3600, 1)
       end
     end
 

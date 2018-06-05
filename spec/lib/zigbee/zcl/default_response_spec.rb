@@ -6,7 +6,7 @@ require 'zigbee/zcl/default_response'
 describe Zigbee::ZCL::DefaultResponse do
   it "decodes" do
     bytes = [ 0x11, 0x22 ]
-    item = Zigbee::ZCL::DefaultResponse.parse(bytes)
+    item = Zigbee::ZCL::DefaultResponse.decode(bytes)
     expect(item.command).to eq(0x11)
     expect(item.status).to eq(0x22)
   end

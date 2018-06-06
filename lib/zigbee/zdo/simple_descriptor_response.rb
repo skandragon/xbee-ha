@@ -4,7 +4,7 @@ require_relative './zdo_command'
 module Zigbee
   module ZDO
     class SimpleDescriptorResponse < ZDOCommand
-      include ArrayUtils
+      include Zigbee::ArrayUtils
 
       attr_reader :status, :address, :endpoint, :profile, :device_id,
                   :device_version, :input_clusters, :output_clusters

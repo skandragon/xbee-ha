@@ -3,7 +3,7 @@ require_relative '../utils'
 module Zigbee
   module ZCL
     class DataType
-      include ArrayUtils
+      include Zigbee::ArrayUtils
 
       attr_reader :type
 

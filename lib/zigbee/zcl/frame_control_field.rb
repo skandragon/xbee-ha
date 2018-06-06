@@ -3,7 +3,7 @@ require_relative '../utils'
 module Zigbee
   module ZCL
     class FrameControlField
-      include ArrayUtils
+      include Zigbee::ArrayUtils
 
       attr_reader :frame_type, :manufacturer_specific, :direction, :disable_default_response
 

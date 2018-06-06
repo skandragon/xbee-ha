@@ -5,7 +5,7 @@ require_relative './zcl_command'
 module Zigbee
   module ZCL
     class WriteAttributes < ZCLCommand
-      include ArrayUtils
+      include Zigbee::ArrayUtils
 
       attr_reader :requests
 

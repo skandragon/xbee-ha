@@ -7,7 +7,7 @@ module Zigbee
       module HomeAutomation
         module IAS
           class ZoneStatusChange < ZCLCommand
-            include ArrayUtils
+            include Zigbee::ArrayUtils
 
             attr_reader :status, :extended_status, :delay, :zone_id
 

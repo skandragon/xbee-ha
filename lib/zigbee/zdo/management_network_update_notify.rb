@@ -4,7 +4,7 @@ require_relative './zdo_command'
 module Zigbee
   module ZDO
     class ManagementNetworkUpdateNotify < ZDOCommand
-      include ArrayUtils
+      include Zigbee::ArrayUtils
 
       attr_reader :status, :scanned_channels, :transmissions, :failed_transmissions, :energy
 

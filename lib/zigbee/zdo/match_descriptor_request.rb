@@ -4,7 +4,7 @@ require_relative './zdo_command'
 module Zigbee
   module ZDO
     class MatchDescriptorRequest < ZDOCommand
-      include ArrayUtils
+      include Zigbee::ArrayUtils
 
       attr_reader :address
       attr_reader :profile_id

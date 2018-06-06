@@ -4,7 +4,7 @@ require_relative 'frame_control_field'
 module Zigbee
   module ZCL
     class Header
-      include ArrayUtils
+      include Zigbee::ArrayUtils
 
       attr_reader :frame_control, :manufacturer_code, :transaction_sequence_number, :command_identifier
 

@@ -5,7 +5,7 @@ require 'zigbee/utils'
 
 describe "utils" do
   class UtilTest
-    include ArrayUtils
+    include Zigbee::ArrayUtils
   end
 
   let (:util) { UtilTest.new }

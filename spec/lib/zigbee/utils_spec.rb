@@ -1,7 +1,7 @@
 require 'rspec'
 require 'spec_helper'
 
-require 'utils'
+require 'zigbee/utils'
 
 describe "utils" do
   class UtilTest

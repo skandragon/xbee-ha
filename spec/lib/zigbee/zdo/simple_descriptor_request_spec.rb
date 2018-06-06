@@ -5,7 +5,6 @@ require 'zigbee/zcl/constants'
 require 'zigbee/zdo/simple_descriptor_request'
 
 describe Zigbee::ZDO::SimpleDescriptorRequest do
-
   it "decodes" do
     bytes = [ 0x11, 0x22, 0x33 ]
     z = Zigbee::ZDO::SimpleDescriptorRequest.decode(bytes)

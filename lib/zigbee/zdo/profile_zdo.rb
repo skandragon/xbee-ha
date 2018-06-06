@@ -1,9 +1,11 @@
 require_relative './active_endpoints_request'
 require_relative './active_endpoints_response'
+require_relative './device_announce'
 require_relative './management_network_update_notify'
 require_relative './match_descriptor_request'
 require_relative './match_descriptor_response'
 require_relative './node_descriptor_request'
+require_relative './power_descriptor_request'
 require_relative './simple_descriptor_request'
 require_relative './simple_descriptor_response'
 
@@ -30,6 +32,7 @@ class ProfileZDO
           0x0002 => {
               id: 0x0002,
               name: 'Node Descriptor Request',
+              cls: Zigbee::ZDO::NodeDescriptorRequest,
           },
           0x8002 => {
               id: 0x08002,
@@ -38,6 +41,7 @@ class ProfileZDO
           0x0003 => {
               id: 0x0003,
               name: 'Power Descriptor Request',
+              cls: Zigbee::ZDO::PowerDescriptorRequest,
           },
           0x8003 => {
               id: 0x8003,
@@ -46,28 +50,32 @@ class ProfileZDO
           0x0004 => {
               id: 0x0004,
               name: 'Simple Descriptor Request',
+              cls: Zigbee::ZDO::SimpleDescriptorRequest,
           },
           0x8004 => {
               id: 0x8004,
               name: 'Simple Descriptor Response',
+              cls: Zigbee::ZDO::SimpleDescriptorResponse,
           },
           0x0005 => {
               id: 0x0005,
               name: 'Active Endpoints Request',
+              cls: Zigbee::ZDO::ActiveEndpointsRequest,
           },
           0x8005 => {
               id: 0x8005,
               name: 'Active Endpoints Response',
+              cls: Zigbee::ZDO::ActiveEndpointsResponse,
           },
           0x0006 => {
               id: 0x0006,
               name: 'Match Descriptor Request',
-              klass: Zigbee::ZDO::MatchDescriptorRequest,
+              cls: Zigbee::ZDO::MatchDescriptorRequest,
           },
           0x8006 => {
               id: 0x8006,
               name: 'Match Descriptor Response',
-              klass: Zigbee::ZDO::MatchDescriptorResponse,
+              cls: Zigbee::ZDO::MatchDescriptorResponse,
           },
           0x0010 => {
               id: 0x0010,
@@ -96,6 +104,7 @@ class ProfileZDO
           0x0013 => {
               id: 0x0013,
               name: 'Device Announce',
+              cls: Zigbee::ZDO::DeviceAnnounce,
           },
           0x0014 => {
               id: 0x0014,

@@ -29,6 +29,14 @@ module ArrayUtils
       self.class.decode_uint32(bytes, count)
     end
 
+    def encode_uint64(*values)
+      self.class.encode_uint64(*values)
+    end
+
+    def decode_uint64(bytes, count = nil)
+      self.class.decode_uint64(bytes, count)
+    end
+
     def ensure_has_bytes(array, expected)
       self.class.ensure_has_bytes(array, expected)
     end
@@ -77,6 +85,31 @@ module ArrayUtils
         bytes.shift | bytes.shift << 8 | bytes.shift << 16 | bytes.shift << 24
       else
         count.times.map { bytes.shift | bytes.shift << 8 | bytes.shift << 16 | bytes.shift << 24 }
+      end
+    end
+
+    def encode_uint64(*values)
+      values.map { |value| [
+          value & 0xff,
+          (value >> 8) & 0xff,
+          (value >> 16) & 0xff,
+          (value >> 24) & 0xff,
+          (value >> 32) & 0xff,
+          (value >> 40) & 0xff,
+          (value >> 48) & 0xff,
+          (value >> 56) & 0xff
+      ] }.flatten
+    end
+
+    def decode_uint64(bytes, count = nil)
+      if count.nil?
+        (bytes.shift | bytes.shift << 8 | bytes.shift << 16 | bytes.shift << 24 |
+            bytes.shift << 32 | bytes.shift << 40 | bytes.shift << 48 | bytes.shift << 56)
+      else
+        count.times.map {
+          (bytes.shift | bytes.shift << 8 | bytes.shift << 16 | bytes.shift << 24 |
+              bytes.shift << 32 | bytes.shift << 40 | bytes.shift << 48 | bytes.shift << 56)
+        }
       end
     end
   end

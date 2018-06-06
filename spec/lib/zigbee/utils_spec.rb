@@ -117,6 +117,18 @@ describe "utils" do
       expect(bytes.length).to eq(1)
       expect(val).to eq(0x44332211)
     end
+
+    it "uint64 encode" do
+      bytes = util.encode_uint64(0x123456789abcdef0)
+      expect(bytes).to eq([0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12])
+    end
+
+    it "uint64 decode" do
+      bytes = [ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0xaa]
+      val = util.decode_uint64(bytes)
+      expect(bytes.length).to eq(1)
+      expect(val).to eq(0x8877665544332211)
+    end
   end
 
   describe "encode/decode lists instance methods" do
@@ -151,6 +163,19 @@ describe "utils" do
       bytes = [ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 ]
       val = util.decode_uint32(bytes, 2)
       expect(val).to eq([0x44332211, 0x88776655])
+    end
+
+    it "uint64 encode" do
+      bytes = util.encode_uint64(0x123456789abcdef0, 0x1122334455667788)
+      expect(bytes).to eq([0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
+                          0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11])
+    end
+
+    it "uint64 decode" do
+      bytes = [ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+                0x88, 0x77, 0x66, 0x55, 0x11, 0x22, 0x33, 0x44]
+      val = util.decode_uint64(bytes, 2)
+      expect(val).to eq([ 0x8877665544332211, 0x4433221155667788])
     end
   end
 end

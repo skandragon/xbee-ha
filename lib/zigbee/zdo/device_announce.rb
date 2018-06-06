@@ -6,12 +6,20 @@ module Zigbee
     class DeviceAnnounce < ZDOCommand
       include Zigbee::ArrayUtils
 
-      attr_reader :address, :ieee, :capability
+      attr_reader :address, :ieee, :capability, :capability_strings
 
       def initialize(address, ieee, capability)
         @address = address
         @ieee = ieee
         @capability = capability
+        cap_strings = []
+        cap_strings << 'alternate-pan-controller' if (capability & 0x01) > 0
+        cap_strings << 'full-function-device' if (capability & 0x02) > 0
+        cap_strings << 'mains-powered' if (capability & 0x04) > 0
+        cap_strings << 'receiver-on-when-idle' if (capability & 0x08) > 0
+        cap_strings << 'high-security-mode' if (capability & 0x40) > 0
+        cap_strings << 'allocate-address' if (capability & 0x80) > 0
+        @capability_strings = cap_strings
       end
 
       def self.decode(bytes)

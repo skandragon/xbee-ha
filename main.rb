@@ -18,6 +18,7 @@ Mongo::Logger.logger.level = Logger::FATAL
 @db = Mongo::Client.new('mongodb://localhost/zigbee')
 @log = @db[:log]
 @zonestatus = @db[:zonestatus]
+@attributes = @db[:attributes]
 @logcounter = 0
 
 @sent_seq = []
@@ -190,6 +191,23 @@ def log_zone_status(node64, endpoint, delay, status, alarm_strings)
       }
   }
   @zonestatus.insert_one(json)
+end
+
+def log_attribute(node64, endpoint, cluster, attribute, datatype, value)
+  @logcounter += 1
+  json = {
+      ts: Time.now,
+      logseq: @logcounter,
+      update: {
+          node64: node64,
+          endpoint: endpoint,
+          cluster: cluster,
+          attribute: attribute,
+          datatype: datatype,
+          value: value
+      }
+  }
+  @attributes.insert_one(json)
 end
 
 def receive
@@ -442,27 +460,28 @@ def process_frame(frame)
     header = Zigbee::ZCL::Header.decode(bytes)
     if header.frame_control.frame_type == Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL
       if header.command_identifier == 0x01 # read attributes response
-        if frame.cluster_id == 0x0000
-          response = Zigbee::ZCL::ReadAttributesResponse.decode(bytes)
-          pp response
+        response = Zigbee::ZCL::ReadAttributesResponse.decode(bytes)
+        pp response
+        log_attribute()
 
-          next_attr = @attrs.shift
-          if next_attr
-            read_attribute(frame, 0x0000, 0x01, endpoint_for(frame.node64_string), next_attr)
-          else
-            write_attribute(frame, 0x0500, 0x01, endpoint_for(frame.node64_string), 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-            zone_enroll_response(frame, 0x01, endpoint_for(frame.node64_string), 0x00, 0x01)
-          end
-          handled = true
+        next_attr = @attrs.shift
+        if next_attr
+          read_attribute(frame, 0x0000, 0x01, endpoint_for(frame.node64_string), next_attr)
+        else
+          write_attribute(frame, 0x0500, 0x01, endpoint_for(frame.node64_string), 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+          zone_enroll_response(frame, 0x01, endpoint_for(frame.node64_string), 0x00, 0x01)
         end
+        handled = true
       end
       if header.command_identifier == 0x0a # report attributes
         response = Zigbee::ZCL::ReportAttributes.decode(bytes)
+        pp header
         pp response
         handled = true
       end
       if header.command_identifier == 0x0b # default response
-        reponse = Zigbee::ZCL::DefaultResponse.decode(bytes)
+        response = Zigbee::ZCL::DefaultResponse.decode(bytes)
+        pp header
         pp response
         handled = true
       end
@@ -473,8 +492,6 @@ def process_frame(frame)
                            0x0500, 0x0104, frame.destination_endpoint, frame.source_endpoint, header.command_identifier, 0)
         end
         update = Zigbee::ZCL::Profiles::HomeAutomation::IAS::ZoneStatusChange.decode(bytes)
-        pp header
-        pp update
         zone_status_list = []
         zone_status_list << 'alarm1' if (update.status & 0x0001) != 0
         zone_status_list << 'alarm2' if (update.status & 0x0002) != 0
@@ -491,16 +508,16 @@ def process_frame(frame)
 
         log_zone_status(frame.node64_string, frame.source_endpoint, update.delay, update.status, zone_status_list)
 
-        if (zone_status_list.include?'tampered')
-          zone_enroll_response(frame, 0x01, frame.source_endpoint, 0x00, 0x01)
-          write_attribute(frame, 0x0500, 0x01, frame.source_endpoint, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-          initiate_normal_mode(frame, 0x01, frame.source_endpoint)
-        end
+        #if (zone_status_list.include?'tampered')
+          #zone_enroll_response(frame, 0x01, frame.source_endpoint, 0x00, 0x01)
+          #write_attribute(frame, 0x0500, 0x01, frame.source_endpoint, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+          #initiate_normal_mode(frame, 0x01, frame.source_endpoint)
+        #end
 
 #        active_endpoints_request(frame)
 #        simple_descriptor_request(frame, endpoint_for(frame.node64_string))
-#        configure_reporting(frame, 0x0001, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0020, 0x20, 30, 3600, 1)
-#        configure_reporting(frame, 0x0402, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0000, 0x29, 30, 3600, 1)
+        configure_reporting(frame, 0x0001, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0020, 0x20, 30, 3600, 1)
+        configure_reporting(frame, 0x0402, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0000, 0x29, 30, 3600, 1)
       end
     end
 

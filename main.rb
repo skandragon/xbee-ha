@@ -12,7 +12,8 @@ require './lib/zigbee/zcl'
 require './lib/zigbee/zcl/profiles/home_automation/ias'
 require './lib/zigbee/zdo/profile_zdo'
 
-PORTNAME = '/dev/tty.usbserial-DA01MFIZ'
+#PORTNAME = '/dev/tty.usbserial-DA01MFIZ'
+PORTNAME = '/dev/tty.usbserial-00000000'
 
 Mongo::Logger.logger.level = Logger::FATAL
 @db = Mongo::Client.new('mongodb://localhost/zigbee')
@@ -352,9 +353,9 @@ def simple_descriptor_request(old_frame, endpoint)
 end
 
 def query_node_descriptor(node64, node16, &block)
-  puts ">>> GetNodeDescriptor #{old_frame.node64_string}/#{old_frame.node16_string} => %04x" % [ addr16 ]
+  puts ">>> GetNodeDescriptor"
   counter = next_counter
-  request = Zigbee::ZDO::NodeDescriptorRequest.new(addr16)
+  request = Zigbee::ZDO::NodeDescriptorRequest.new(node16)
   bytes = [counter] + request.encode
   send_explicit(counter, node64, node16, 0x0002, 0, bytes) { |status, response|
     block.call(status, response)
@@ -378,19 +379,19 @@ def process_frame(frame)
       cap_strings << 'allocate-address' if (capability & 0x80) > 0
       puts " Capabilities: #{cap_strings.join(', ')}"
 
-#      query_node_descriptor(frame.node64_string, frame.node16) { |status, data|
-#        case status
-#        when :response
-#          puts "Got node descriptor response"
-#          pp data
-#        else
-#          puts "Got status #{status} when querying node descriptor"
-#        end
-#      }
+      query_node_descriptor(frame.node64, frame.node16) { |status, data|
+        case status
+        when :response
+          puts "Got node descriptor response"
+          pp data
+        else
+          puts "Got status #{status} when querying node descriptor"
+        end
+      }
 
-#      if frame.node64_string == '000d6f000b1b6dc2' || frame.node64_string == '8418260000e8eef8'
-#        active_endpoints_request(frame)
-#      end
+      if ['000d6f000b1b6dc2', '8418260000e8eef8', '000d6f000fe7c93b'].include?(frame.node64_string)
+        active_endpoints_request(frame)
+      end
 
       handled = true
     end

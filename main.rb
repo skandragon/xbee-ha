@@ -38,6 +38,13 @@ def endpoint_for(addr)
   end
 end
 
+def force_extended_timeout(addr)
+  [
+      '00155f00b44cb7b6',
+      '00155f00b44cdda0'
+  ].include?(addr)
+end
+
 def hexdump(data, msg = nil)
   i = 0
   bytes = data[i..(i + 15)]
@@ -52,6 +59,10 @@ def send_explicit(counter, node64, node16, cluster_id, profile_id, data,
                   src_endpoint = 0, dst_endpoint = 0,
                   broadcast_radius = 0, options = 0, &block)
   data = data.pack('C*') if data.is_a?Array
+
+  if force_extended_timeout('%0x16x' % node64)
+    options |= 0x40
+  end
 
   header = [
       0x11,
@@ -147,12 +158,11 @@ def receive_and_dump
         }
     }
     @log.insert_one(json)
-  else
-    if frame.is_a?(Xbee::ZigbeeExplicitRxIndicatorFrame)
-      puts
-      puts ">>> #{frame.frame.node64_string} #{frame.frame.node16_string}"
-      hexdump frame.app_data
-    end
+  elsif !frame.frame.is_a?(Xbee::ZigbeeExplicitRxIndicatorFrame)
+    puts
+    puts ">>> #{frame.frame.node64_string} #{frame.frame.node16_string}"
+    pp frame
+    hexdump frame.app_data
   end
 
   frame.frame
@@ -196,19 +206,24 @@ end
 
 def log_attribute(node64, endpoint, cluster, attribute, datatype, value)
   @logcounter += 1
+  key = {
+      node64: node64,
+      endpoint: endpoint,
+      cluster: cluster,
+      attribute: attribute
+  }
+
   json = {
       ts: Time.now,
-      logseq: @logcounter,
-      update: {
-          node64: node64,
-          endpoint: endpoint,
-          cluster: cluster,
-          attribute: attribute,
-          datatype: datatype,
-          value: value
-      }
+      node64: node64,
+      endpoint: endpoint,
+      cluster: cluster,
+      attribute: attribute,
+      datatype: datatype,
+      value: value
   }
-  @attributes.insert_one(json)
+  @attributes.update_one(key, json, { upsert: true })
+  puts ("Attr update: cl %04x, id %04x, value " % [ cluster, attribute ]) + value.to_s
 end
 
 def receive
@@ -259,7 +274,7 @@ def read_zcl_header(data)
   [ flags, seq, cmd, remaining ]
 end
 
-@attrs = [ ] # 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0007 ]
+@attrs = [ 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0007, 0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x4000 ]
 
 def read_attribute(old_frame, cluster, src_endpoint, dst_endpoint, attribute)
   puts ">>> ReadAttributee #{old_frame.node64_string}/#{old_frame.node16_string} cluster 0x%04x attribute 0x%04x" % [ cluster, attribute ]
@@ -313,7 +328,7 @@ def default_response(old_frame, seq, type, cluster, profile, src_endpoint, dst_e
   counter = next_counter
   request = [ command, status ]
 
-  frame_control = Zigbee::ZCL::FrameControlField.new(type, 0x01, 0, 0)
+  frame_control = Zigbee::ZCL::FrameControlField.new(type, 0x01, 1, 0)
   header = Zigbee::ZCL::Header.new(frame_control, seq, 0x0b)
   bytes = [header.encode + request].flatten
   send_explicit(counter, old_frame.node64, old_frame.node16, cluster, profile, bytes.pack('C*'), src_endpoint, dst_endpoint)
@@ -361,6 +376,36 @@ def query_node_descriptor(node64, node16, &block)
     block.call(status, response)
   }
   counter
+end
+
+def ota_no_image(frame, seq)
+  puts ">>> OTA no image: #{frame.node64_string}/#{frame.node16_string}"
+  counter = next_counter
+  request = [ 0x98 ]
+
+  frame_control = Zigbee::ZCL::FrameControlField.new(1, 0x01, 1, 0)
+  header = Zigbee::ZCL::Header.new(frame_control, seq, 0x02)
+  bytes = [header.encode + request].flatten
+  send_explicit(counter, frame.node64, frame.node16, frame.cluster_id, frame.profile_id, bytes.pack('C*'), frame.source_endpoint, frame.destination_endpoint, 0, 0x20)
+  counter
+end
+
+
+@devices = {}
+
+def interrogate_device(frame)
+  if !@devices[frame.node64_string]
+    write_attribute(frame, 0x0500, 0x01, endpoint_for(frame.node64_string), 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
+    zone_enroll_response(frame, 0x01, endpoint_for(frame.node64_string), 0x00, 0x01)
+    configure_reporting(frame, 0x0001, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0020, 0x20, 30, 3600, 1)
+    configure_reporting(frame, 0x0402, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0000, 0x29, 30, 3600, 1)
+    @devices[frame.node64_string] = @attrs.dup
+  else
+    next_attr = @devices[frame.node64_string].shift
+    if next_attr
+      read_attribute(frame, 0x0000, 0x01, endpoint_for(frame.node64_string), next_attr)
+    end
+  end
 end
 
 def process_frame(frame)
@@ -416,15 +461,15 @@ def process_frame(frame)
           reply = Zigbee::ZDO::MatchDescriptorResponse.new(0x00, 0x0000, [ 0x01 ])
           reply_bytes = [ seq ] + reply.encode
           send_explicit(next_counter, frame.node64, frame.node16, 0x8006, 0x0000, reply_bytes.pack('C*'))
-
-          next_attr = @attrs.shift
-          if next_attr
-            read_attribute(frame, 0x0000, 0x01, endpoint_for(frame.node64_string), next_attr)
-          else
-            write_attribute(frame, 0x0500, 0x01, endpoint_for(frame.node64_string), 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-            zone_enroll_response(frame, 0x01, endpoint_for(frame.node64_string), 0x00, 0x01)
-          end
+          interrogate_device(frame)
           handled = true
+        end
+
+        if match_request.input_clusters == [ 0x0019 ]
+          puts "Received OTA server request, claiming it's us on our endpoint 0x02"
+          reply = Zigbee::ZDO::MatchDescriptorResponse.new(0x00, 0x0000, [ 0x02 ])
+          reply_bytes = [ seq ] + reply.encode
+          send_explicit(next_counter, frame.node64, frame.node16, 0x8006, 0x0000, reply_bytes.pack('C*'))
         end
       end
     end
@@ -457,27 +502,24 @@ def process_frame(frame)
   end
 
   if frame.profile_id == 0x0104
+    interrogate_device(frame)
     bytes = frame.app_data.unpack('C*')
     header = Zigbee::ZCL::Header.decode(bytes)
     if header.frame_control.frame_type == Zigbee::ZCL::FrameControlField::FRAME_TYPE_GLOBAL
       if header.command_identifier == 0x01 # read attributes response
         response = Zigbee::ZCL::ReadAttributesResponse.decode(bytes)
-        pp response
-        log_attribute()
-
-        next_attr = @attrs.shift
-        if next_attr
-          read_attribute(frame, 0x0000, 0x01, endpoint_for(frame.node64_string), next_attr)
-        else
-          write_attribute(frame, 0x0500, 0x01, endpoint_for(frame.node64_string), 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-          zone_enroll_response(frame, 0x01, endpoint_for(frame.node64_string), 0x00, 0x01)
+        response.responses.each do |attr|
+          if attr.status == 0
+            log_attribute(frame.node64_string, frame.source_endpoint, frame.cluster_id, attr.id, attr.data_type, attr.value)
+          end
         end
         handled = true
       end
       if header.command_identifier == 0x0a # report attributes
         response = Zigbee::ZCL::ReportAttributes.decode(bytes)
-        pp header
-        pp response
+        response.responses.each do |attr|
+          log_attribute(frame.node64_string, frame.source_endpoint, frame.cluster_id, attr.id, attr.data_type, attr.value)
+        end
         handled = true
       end
       if header.command_identifier == 0x0b # default response
@@ -509,16 +551,12 @@ def process_frame(frame)
 
         log_zone_status(frame.node64_string, frame.source_endpoint, update.delay, update.status, zone_status_list)
 
-        #if (zone_status_list.include?'tampered')
-          #zone_enroll_response(frame, 0x01, frame.source_endpoint, 0x00, 0x01)
-          #write_attribute(frame, 0x0500, 0x01, frame.source_endpoint, 0x0010, 0xf0, @myid64_bytes_le.unpack('Q<').first)
-          #initiate_normal_mode(frame, 0x01, frame.source_endpoint)
-        #end
-
-#        active_endpoints_request(frame)
-#        simple_descriptor_request(frame, endpoint_for(frame.node64_string))
-        configure_reporting(frame, 0x0001, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0020, 0x20, 30, 3600, 1)
-        configure_reporting(frame, 0x0402, 0x0104, 0x01, endpoint_for(frame.node64_string), 0x0000, 0x29, 30, 3600, 1)
+        #zone_enroll_response(frame, 0x01, frame.source_endpoint, 0x00, 0x01)
+      end
+      if frame.cluster_id == 0x0019 && header.command_identifier == 0x01
+        puts "Got OTA firmware update reqest, lying..."
+        ota_no_image(frame, header.transaction_sequence_number)
+        handled = true
       end
     end
 
@@ -544,5 +582,14 @@ loop do
   frame = receive_and_dump
   next unless frame.is_a?(Xbee::ZigbeeExplicitRxIndicatorFrame)
   log_rx(frame)
-  process_frame(frame)
+  begin
+    process_frame(frame)
+  rescue Exception => e
+    puts "EXCEPTION: "
+    puts e.message
+    puts e.backtrace
+    pp frame
+    hexdump frame.frame.app_data
+    puts "END EXCEPTION"
+  end
 end
